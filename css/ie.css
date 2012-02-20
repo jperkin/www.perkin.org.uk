@@ -1,0 +1,6 @@
+.highlight {
+  behavior: url(/css/border-radius.htc);
+}
+#post table {
+  behavior: url(/css/border-radius.htc);
+}

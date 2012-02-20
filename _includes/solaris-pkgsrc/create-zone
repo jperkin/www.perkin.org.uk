@@ -1,0 +1,158 @@
+#!/bin/sh
+
+DOMAIN="adsl.perkin.org.uk"
+MASQDOMAIN="perkin.org.uk"
+PHYSIF="e1000g0"
+RPOOL="gromit"
+
+if [ $# -eq 1 ]; then
+    name=$1; shift
+    ipaddr=`getent hosts ${name} | awk '{print $1}'`
+    if [ -z "${ipaddr}" ]; then
+        echo "ERROR: Could not determine IP address of $name"
+        echo "Either add to hosts database or provide on command line"
+        echo
+        echo "usage: $0 <name> [ <ipaddr> ]"
+        exit 2
+    fi
+elif [ $# -eq 2 ]; then
+    name=$1; shift
+    ipaddr=$1; shift
+else
+    echo "usage: $0 <name> [ <ipaddr> ]"
+    exit 2
+fi
+
+zfs list ${RPOOL}/zones/$name >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+    echo "${RPOOL}/zones/$name already exists, not continuing"
+    exit 1
+fi
+
+# Inherited directories are read-only
+cat >/tmp/zonecfg.$$ << EOF
+    create
+    set zonepath=/zones/$name
+    set autoboot=true
+    add net
+        set address=$ipaddr/24
+        set physical=${PHYSIF}
+    end
+    verify
+    commit
+    exit
+EOF
+
+zonecfg -z $name -f /tmp/zonecfg.$$
+rm /tmp/zonecfg.$$
+
+zoneadm -z $name install
+
+#
+# Automatically configure new zone with most of the settings from the current
+# global, grabbing the encrypted root password directly.  Note that the
+# service_profile keyword doesn't seem to be used here, so we configure the
+# limited_net profile manually and optionally install a custom site.xml which
+# is parsed and activated during first boot.
+#
+cat << EOF >/zones/$name/root/etc/sysidcfg
+network_interface=PRIMARY
+{
+    hostname=$name.${DOMAIN}
+}
+name_service=DNS
+{
+    domain_name=${DOMAIN}
+    name_server=`awk '/^nameserver/ { print $NF; exit }' /etc/resolv.conf`
+}
+nfs4_domain=dynamic
+root_password=`awk -F: '/^root/ {print $2}' /etc/shadow`
+security_policy=NONE
+service_profile=limited_net
+system_locale=C
+terminal=xterm
+timezone=Europe/London
+EOF
+
+#
+# Use the limited_net profile and install custom site.xml if provided.
+#
+rm /zones/${name}/root/var/svc/profile/generic.xml
+ln -s generic_limited_net.xml /zones/${name}/root/var/svc/profile/generic.xml
+if [ -f /install/zones/${name}.xml ]; then
+    cp /install/zones/${name}.xml /zones/${name}/root/var/svc/profile/site.xml
+fi
+
+#
+# Disable nscd host cache
+#
+ex /zones/$name/root/etc/nscd.conf >/dev/null 2>&1 <<EOF
+/enable-cache/s/^#//
+wq
+EOF
+
+#
+# Configure sendmail to masquerade and route via smarthost.
+#
+ex /zones/$name/root/etc/mail/cf/cf/submit.mc >/dev/null 2>&1 <<EOF
+/^dnl/
+a
+FEATURE(\`masquerade_envelope')dnl
+MASQUERADE_AS(\`${MASQDOMAIN}')dnl
+dnl
+.
+/^FEATURE.*msp/s/.127.0.0.1./mail.perkin.org.uk/
+wq!
+EOF
+(cd /zones/$name/root/etc/mail/cf/cf; /usr/ccs/bin/make submit.cf >/dev/null 2>&1)
+cp /zones/$name/root/etc/mail/cf/cf/submit.cf /zones/$name/root/etc/mail/submit.cf
+
+#
+# Use SHA512 crypted passwords, and change root's home directory.
+#
+ex /zones/$name/root/etc/security/policy.conf >/dev/null 2>&1 <<EOF
+/^CRYPT_DEFAULT/s/__unix__/6/
+wq
+EOF
+mkdir -m 0700 /zones/$name/root/root
+ex /zones/$name/root/etc/passwd >/dev/null 2>&1 <<EOF
+/^root/s,:/:,:/root:,
+/^root/s,:/sbin/sh,:/bin/bash,
+wq
+EOF
+
+cp /root/.bash_profile /zones/$name/root/root/.bash_profile
+
+#
+# Allow root login over SSH (rest of network takes care of external access
+# so this isn't a problem) and enforce SSH key authentication.
+#
+ex /zones/$name/root/etc/ssh/sshd_config >/dev/null 2>&1 <<EOF
+/^PermitRootLogin/s/no$/yes/
+/^PasswordAuthentication/s/yes$/no/
+wq
+EOF
+mkdir -m 0700 /zones/$name/root/root/.ssh
+cp /home/jperkin/.ssh/local_rsa.pub /zones/$name/root/root/.ssh/authorized_keys
+
+#
+# Automount shared directories from global zone using direct mounts
+#
+ex /zones/$name/root/etc/auto_master >/dev/null 2>&1 <<EOF
+a
+/-        auto_direct
+.
+wq
+EOF
+ex /zones/$name/root/etc/auto_direct >/dev/null 2>&1 <<EOF
+a
+/content    gromit-lan:/content
+/install    gromit-lan:/install
+.
+wq
+EOF
+
+#
+# All done!  Fire it up...
+#
+zoneadm -z $name boot

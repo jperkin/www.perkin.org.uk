@@ -1,0 +1,19 @@
+.highlight {
+  padding: 0px 20px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  line-height: 1.25em;
+  text-shadow: none;
+  margin-left: 20px;
+  margin-right: 40px;
+}
+.highlight code {
+  font-family: 'Ubuntu Mono', monospace;
+  font-size: 16px;
+}
+.highlight:hover {
+  overflow: auto;
+}
+/* syntax definitions sourced from external file */

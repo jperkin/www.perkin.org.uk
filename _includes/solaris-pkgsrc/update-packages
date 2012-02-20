@@ -1,0 +1,28 @@
+#!/bin/sh
+
+PATH="/opt/pkg/sbin:/opt/pkg/bin:/sbin:/usr/sbin:/usr/bin:/usr/ccs/bin"
+export PATH
+
+BRANCH=2009Q2
+export BRANCH
+
+PKGSRCDIR=/content/pkgsrc-${BRANCH}
+export PKGSRCDIR
+
+if [ ! -f /opt/pkg/bin/bmake ]; then
+    (cd /; tar -xf /install/pkgsrc/bootstrap-${BRANCH}.tar)
+fi
+
+# Run this anyway in case there are updates to pkg_chk
+env PKG_PATH=/install/pkgsrc/packages/${BRANCH}/All pkg_add -u pkg_chk
+
+# Dry run first
+pkg_chk -aurbn
+
+printf "Do you wish to install? [y/N]: "
+read ans
+case "${ans}" in
+[Yy])
+    pkg_chk -aurb 2>&1 | tee -a /install/pkgsrc/logs/pkg_chk-${BRANCH}.log
+    ;;
+esac

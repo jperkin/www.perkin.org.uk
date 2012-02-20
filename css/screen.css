@@ -1,0 +1,95 @@
+/*
+ * Aiming for a minimal design with minimal CSS.
+ *
+ * Initially based on the layout for http://skim.la/
+ */
+
+/*
+ * Font and background defaults for <body>, we use the Ubuntu Web Font
+ * if available.
+ */
+body {
+  background: #fafafa;
+  font-family: Ubuntu, sans-serif;
+  font-size: 16px;
+}
+
+/*
+ * Defaults for links.
+ */
+a {
+  color: #3b3b3b;
+  text-decoration: none;
+}
+
+/*
+ * Defaults for headers.
+ */
+h1 {
+  font-size: 22px;
+  font-style: bold;
+  border-bottom: 1px solid #eee;
+}
+
+/*
+ * Code sections which aren't handed by syntax.css
+ */
+code {
+  font-family: 'Ubuntu Mono', monospace;
+  font-size: 16px;
+}
+
+/*
+ * `content' is the main layout holder for all viewable elements
+ *
+ * I like a little bit of whitespace at the edges, but don't
+ * bother with vertical space as it just means more scrolling..
+ */
+.content {
+  margin: 0 12%;
+}
+
+/*
+ * `header' contains the main page title and some static links
+ *
+ * Make the main title large, links smaller, don't underline links, and change
+ * the colour of links slightly when hovered.
+ */
+#header #title {
+  font-size: 18px;
+}
+#header #links {
+  font-size: 11px;
+}
+#header #links a:hover {
+  color: #a5a5a5;
+}
+
+/*
+ * `post' contains the blog post
+ */
+#post #info {
+  font-size: 90%;
+  color: #a5a5a5;
+}
+#post #info a {
+  color: #a5a5a5;
+}
+#post #info a:hover {
+  color: #3b3b3b;
+}
+#post .table {
+  margin-left: 20px;
+  margin-right: 40px;
+}
+#post table {
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  line-height: 1.25em;
+  text-shadow: none;
+  width: 100%;
+  padding: 0px 20px;
+  background: #cccccc; color: #101010
+}

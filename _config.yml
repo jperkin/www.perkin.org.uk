@@ -1,0 +1,5 @@
+permalink:  /blog/:year/:month/:title/
+exclude: Makefile, README.md
+auto: false
+safe: false
+pygments: true

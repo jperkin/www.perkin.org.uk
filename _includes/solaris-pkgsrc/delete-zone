@@ -1,0 +1,12 @@
+#!/bin/sh
+
+RPOOL="gromit"
+
+if [ $# -ne 1 ]; then
+    echo "usage: $0 <zone>"
+    exit 2
+fi
+
+zoneadm -z $1 halt
+zonecfg -z $1 delete -F
+zfs destroy ${RPOOL}/zones/$1
