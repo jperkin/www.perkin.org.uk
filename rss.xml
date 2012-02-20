@@ -4,9 +4,9 @@ layout: nil
 <?xml version="1.0"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>www-test.perkin.org.uk</title>
-    <link>http://www-test.perkin.org.uk/</link>
-    <atom:link href="http://www-test.perkin.org.uk/rss.xml" rel="self" type="application/rss+xml" />
+    <title>Jonathan Perkin</title>
+    <link>http://www.perkin.org.uk/</link>
+    <atom:link href="http://www.perkin.org.uk/rss.xml" rel="self" type="application/rss+xml" />
     <description>Jonathan Perkin</description>
     <language>en-us</language>
     <pubDate>{{ site.time | date: "%a, %d %b %Y %H:%M:%S %z" }}</pubDate>
@@ -15,10 +15,10 @@ layout: nil
     {% for post in site.posts %}
     <item>
       <title>{{ post.title }}</title>
-      <link>http://www-test.perkin.org.uk{{ post.url }}</link>
+      <link>http://www.perkin.org.uk{{ post.url }}</link>
       <pubDate>{{ post.date | date: "%a, %d %b %Y %H:%M:%S %z" }}</pubDate>
       <author>jonathan@perkin.org.uk (Jonathan Perkin)</author>
-      <guid>http://www-test.perkin.org.uk{{ post.id }}</guid>
+      <guid>http://www.perkin.org.uk{{ post.id }}</guid>
       <description>{{ post.content | xml_escape }}</description>
     </item>
     {% endfor %}

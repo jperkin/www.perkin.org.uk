@@ -1,2 +1,3 @@
 Redirect /blog/2008/12/jumpstart_from_osx/ /blog/2008/12/jumpstart-from-osx/
+Redirect /feed/ /rss.xml
 Options -Indexes

@@ -4,11 +4,11 @@ layout: nil
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
  
- <title>skim</title>
- <link href="http://www-test.perkin.org.uk/atom.xml" rel="self"/>
- <link href="http://www-test.perkin.org.uk/"/>
+ <title>Jonathan Perkin</title>
+ <link href="http://www.perkin.org.uk/atom.xml" rel="self"/>
+ <link href="http://www.perkin.org.uk/"/>
  <updated>{{ site.time | date_to_xmlschema }}</updated>
- <id>http://www-test.perkin.org.uk/</id>
+ <id>http://www.perkin.org.uk/</id>
  <author>
    <name>Jonathan Perkin</name>
  </author>
@@ -19,9 +19,9 @@ layout: nil
    {% for category in post.categories %}
    <category term="{{category}}" />
    {% endfor %}
-   <link href="http://www-test.perkin.org.uk{{ post.url }}"/>
+   <link href="http://www.perkin.org.uk{{ post.url }}"/>
    <updated>{{ post.date | date_to_xmlschema }}</updated>
-   <id>http://www-test.perkin.org.uk{{ post.id }}</id>
+   <id>http://www.perkin.org.uk{{ post.id }}</id>
    <content type="html">{{ post.content | xml_escape }}</content>
  </entry>
  {% endfor %}

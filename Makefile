@@ -11,5 +11,5 @@ publish:
 	@# be required anymore, guess my install is too old...
 	@cp .htaccess _site/
 	@# Yes, I'm giving away the path to my site.  No, I don't care.
-	@rsync -avz --delete _includes/ www.perkin.org.uk:/content/vwww/www-test.perkin.org.uk/files/
-	@rsync -avz --delete --exclude "files" _site/ www.perkin.org.uk:/content/vwww/www-test.perkin.org.uk/
+	@rsync -avz --delete _includes/ www.perkin.org.uk:/content/vwww/www.perkin.org.uk/files/
+	@rsync -avz --delete --exclude "files" _site/ www.perkin.org.uk:/content/vwww/www.perkin.org.uk/
