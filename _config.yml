@@ -4,3 +4,5 @@ auto: false
 safe: false
 pygments: true
 tag_dir: /blog/tag
+tag_title_prefix: "Jonathan Perkin &raquo; "
+tag_title_suffix: ""
