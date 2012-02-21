@@ -8,7 +8,7 @@ layout: nil
     <link>http://www.perkin.org.uk/</link>
     <atom:link href="http://www.perkin.org.uk/rss.xml" rel="self" type="application/rss+xml" />
     <description>Jonathan Perkin</description>
-    <language>en-us</language>
+    <language>en-gb</language>
     <pubDate>{{ site.time | date: "%a, %d %b %Y %H:%M:%S %z" }}</pubDate>
     <lastBuildDate>{{ site.time | date: "%a, %d %b %Y %H:%M:%S %z" }}</lastBuildDate>
 
