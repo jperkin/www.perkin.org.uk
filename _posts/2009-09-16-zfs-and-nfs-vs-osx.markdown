@@ -1,6 +1,6 @@
 ---
 layout: post
-title: ZFS+NFS vs OSX
+title: ZFS and NFS vs OSX
 tags: [bug, nfs, osx, solaris, zfs]
 ---
 
