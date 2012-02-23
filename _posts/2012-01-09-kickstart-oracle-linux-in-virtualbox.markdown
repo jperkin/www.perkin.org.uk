@@ -44,10 +44,10 @@ my VMs in `${HOME}/VirtualBox` rather than the default `${HOME}/VirtualBox VMs`.
 $ VBoxManage createhd --filename "VirtualBox/${VM}/${VM}.vdi" --size 32768
 
 $ VBoxManage storagectl "${VM}" --name "SATA Controller" --add sata \
-    --controller IntelAHCI
+>   --controller IntelAHCI
 
 $ VBoxManage storageattach "${VM}" --storagectl "SATA Controller" --port 0 \
-    --device 0 --type hdd --medium "VirtualBox/${VM}/${VM}.vdi"
+>   --device 0 --type hdd --medium "VirtualBox/${VM}/${VM}.vdi"
 {% endhighlight %}
 
 Default RAM is 128MB, Oracle Linux installer requires at least 512MB however.
