@@ -3,9 +3,11 @@ layout: default
 ---
 <div id="post">
         <h1><a href="{{ page.url }}">{{ page.title }}</a></h1>
-        <div id="info">
-          {{ page.date | date: "%b %d, %Y" }} &middot; [{% for tag in page.tags %}<a href="/blog/tag/{{ tag }}/">{{tag}}</a>{% unless forloop.last %}, {% endunless %}{% endfor %}]
+        <div class="info">
+          {{ page.date | date: "%b %d, %Y" }}
         </div>
         {{ content }}
-        <hr />
+        <div class="info">
+          Tagged in: {% for tag in page.tags %}<a href="/blog/tag/{{ tag }}/">{{tag}}</a>{% unless forloop.last %}, {% endunless %}{% endfor %}
+        </div>
       </div>

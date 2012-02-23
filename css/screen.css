@@ -45,7 +45,7 @@ code {
  * I like a little bit of whitespace at the edges, but don't
  * bother with vertical space as it just means more scrolling..
  */
-.content {
+#content {
   margin: 0 12%;
 }
 
@@ -68,14 +68,14 @@ code {
 /*
  * `post' contains the blog post
  */
-#post #info {
-  font-size: 90%;
+#post .info {
+  font-size: 12px;
   color: #a5a5a5;
 }
-#post #info a {
+#post .info a {
   color: #a5a5a5;
 }
-#post #info a:hover {
+#post .info a:hover {
   color: #3b3b3b;
 }
 #post .table {
