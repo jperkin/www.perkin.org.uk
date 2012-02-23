@@ -1,8 +1,8 @@
-permalink:  /blog/:year/:month/:title/
+permalink:  /posts/:year/:month/:title/
 exclude: Makefile, README.md
 auto: false
 safe: false
 pygments: true
-tag_dir: /blog/tag
+tag_dir: /posts/tag
 tag_title_prefix: "Jonathan Perkin &raquo; "
 tag_title_suffix: ""

@@ -8,6 +8,6 @@ layout: default
         </div>
         {{ content }}
         <div class="info">
-          Tagged in: {% for tag in page.tags %}<a href="/blog/tag/{{ tag }}/">{{tag}}</a>{% unless forloop.last %}, {% endunless %}{% endfor %}
+          Tagged in: {% for tag in page.tags %}<a href="/posts/tag/{{ tag }}/">{{tag}}</a>{% unless forloop.last %}, {% endunless %}{% endfor %}
         </div>
       </div>

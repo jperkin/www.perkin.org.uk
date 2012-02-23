@@ -1,7 +1,7 @@
 ---
 layout: post
-title: New blog design
-tags: [blog]
+title: New site design
+tags: [site]
 ---
 
 I am a minimalist at heart, and I love command line interfaces and text files.
