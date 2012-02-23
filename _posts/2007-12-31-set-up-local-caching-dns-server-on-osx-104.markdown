@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Set Up Local Caching DNS Server On OSX 10.4
+title: Set up local caching DNS server on OSX 10.4
 tags: [dns, osx]
 ---
 
