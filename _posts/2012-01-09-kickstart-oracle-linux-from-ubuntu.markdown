@@ -6,7 +6,7 @@ tags: [dhcp, kickstart, nginx, oracle-linux, tftp, ubuntu]
 
 As my new job involves working on Oracle Linux, I figured I should migrate my
 home server to it, which would also mean I could move it to a proper RAID10
-configuration rather than relying on multiple RAID1′s.
+configuration rather than relying on multiple RAID1s.
 
 My laptop runs Ubuntu, and I wanted to install the server from it using PXE and
 Kickstart, so here's how I did it.
@@ -14,7 +14,7 @@ Kickstart, so here's how I did it.
 ## Configure dhcpd
 
 DHCP is required for two things, to give the server its network configuration,
-and to point it at the pxe boot loader we want to use.
+and to point it at the PXE boot loader we want to use.
 
 {% highlight console %}
 $ sudo apt-get install isc-dhcp-server
@@ -48,7 +48,7 @@ its simplicity it is the primary way to network boot, as it can be easily
 embedded into firmware.
 
 All we need to do is install the TFTP daemon and syslinux which includes the
-pxe boot loader, then put the pxelinux file into the tftproot area:
+PXE boot loader, then put the pxelinux file into the tftproot area:
 
 {% highlight console %}
 $ sudo apt-get install syslinux tftpd-hpa
