@@ -12,12 +12,13 @@
  *  - change .se #cd0000 -> #ff5555
  *  - change all #cd0000 -> #ff40ff
  *  - change all #000080 -> #808080
- *  - change background to #101010
+ *  - change background to #111
+ *  - change foreground to #ddd
  */
-.highlight .hll { background-color: #222222 }
-.highlight      { background: #101010; color: #cccccc }
+.highlight .hll { background-color: #222 }
+.highlight      { background: #111; color: #ddd }
 .highlight .c   { color: #808080 } /* Comment */
-.highlight .err { color: #cccccc; border: 1px solid #FF0000 } /* Error */
+.highlight .err { color: #cccccc; border: 1px solid #f00 } /* Error */
 .highlight .g   { color: #cccccc } /* Generic */
 .highlight .k   { color: #cdcd00 } /* Keyword */
 .highlight .l   { color: #cccccc } /* Literal */
