@@ -1,19 +1,18 @@
 .highlight {
-  padding: 0px 20px;
   -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  border-radius: 10px;
+     -moz-border-radius: 10px;
+          border-radius: 10px;
   overflow: hidden;
-  line-height: 1.25em;
+  line-height: 1.50em;
   text-shadow: none;
-  margin-left: 20px;
-  margin-right: 40px;
-}
-.highlight code {
-  font-family: 'Ubuntu Mono', monospace;
-  font-size: 16px;
+  margin: 10px 20px;
+  width: auto;
 }
 .highlight:hover {
   overflow: auto;
+}
+.highlight pre {
+  margin: 10px 20px;
+  width: auto;
 }
 /* syntax definitions sourced from external file */

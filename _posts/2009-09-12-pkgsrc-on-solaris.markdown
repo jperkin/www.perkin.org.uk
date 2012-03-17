@@ -185,10 +185,10 @@ you will need to update this when moving to newer releases.
 
 Ok, so here is the stuff I have for my setup and where I keep them:
 
-<div class="table">
+<div class="posttable">
  <table>
   <thead>
-   <tr><th>Path</th><th>Description</th></tr>
+   <tr><th style="width: 40%">Path</th><th>Description</th></tr>
   </thead>
   <tbody>
    <tr><td><code>/content/pkgsrc-2009Q2</code></td><td>Checked out pkgsrc tree, "2009Q2" branch</td></tr>
@@ -206,7 +206,7 @@ Ok, so here is the stuff I have for my setup and where I keep them:
 
 And these are the paths where stuff will be created:
 
-<div class="table">
+<div class="posttable">
  <table>
   <thead>
    <tr><th>Path</th><th>Description</th></tr>

@@ -2,7 +2,8 @@
 <html lang="en">
   <head>  
     <title>{{ page.title }}</title>
-    <link href='http://fonts.googleapis.com/css?family=Ubuntu:400,700,400italic,700italic|Ubuntu+Mono:400,700' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Ubuntu:300,300italic,500|Ubuntu+Mono:400' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/reset.css" type="text/css" />
     <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
     <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
     <link rel="stylesheet" href="/css/vim.css" type="text/css" />
@@ -24,19 +25,21 @@
   </head>
   <body>
     <div id="content">
-      <div id="header">
-        <div id="title"><a href="/">Jonathan Perkin</a></div>
-        <div id="links">
-          <a href="/atom.xml">atom</a> &middot;
-          <a href="/rss.xml">rss</a> &middot;
+      <div id="banner">
+        <div id="bannertitle"><a href="/">Jonathan Perkin</a></div>
+        <div id="bannerlinks">
+          <a href="/about.html">about me</a> &middot; 
+          <a href="/rss.xml">rss</a> &middot; 
           <a href="http://twitter.com/jperkin">twitter</a> &middot; 
           <a href="http://github.com/jperkin">github</a>
         </div>
       </div>
       {{ content }}
-      <div id="listposts">
-        <h1>All posts</h1>{% for post in site.posts %}
-        <div>{{ post.date | date: "%b %d, %Y" }} &raquo; <a href="{{ post.url }}">{{ post.title }}</a></div>{% endfor %}
+      <div id="allposts">
+        <h1>All Posts</h1>
+        <ul class="posts">{% for post in site.posts %}
+          <li><span>{{ post.date | date: "%d %b %Y" }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>{% endfor %}
+        </ul>
       </div>
     </div>
   </body>

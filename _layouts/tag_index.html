@@ -2,6 +2,8 @@
 layout: default
 ---
 <div id="taggedposts">
-        <h1>Posts tagged "{{ page.tag }}"</h1>{% for post in site.posts %}{% for tag in post.tags %}{% if tag == page.tag %}
-        <div>{{ post.date | date: "%b %d, %Y" }} &raquo; <a href="{{ post.url }}">{{ post.title }}</a></div>{% endif %}{% endfor %}{% endfor %}
+        <h1>Posts tagged "{{ page.tag }}"</h1>
+        <ul class="posts">{% for post in site.posts %}{% for tag in post.tags %}{% if tag == page.tag %}
+          <li><span>{{ post.date | date: "%d %b %Y" }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>{% endif %}{% endfor %}{% endfor %}
+        </ul>
       </div>
