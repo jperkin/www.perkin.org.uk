@@ -74,21 +74,21 @@ On systems which support multiple targets, you can specify exactly which one
 you want, rather than relying on the OS default.  These strings are meant to be
 added to the cmake command lines above.
 
-#### OSX
+* OSX
 
 {% highlight console %}
 $ -DCMAKE_OSX_ARCHITECTURES="i386"    # 32bit
 $ -DCMAKE_OSX_ARCHITECTURES="x86_64"  # 64bit
 {% endhighlight %}
 
-#### GCC/Sun Studio
+* GCC/Sun Studio
 
 {% highlight console %}
 $ -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32"  # 32bit
 $ -DCMAKE_C_FLAGS="-m64" -DCMAKE_CXX_FLAGS="-m64"  # 64bit
 {% endhighlight %}
 
-#### HP/UX
+* HP/UX
 
 {% highlight console %}
 $ -DCMAKE_C_FLAGS="+DD64" -DCMAKE_CXX_FLAGS="+DD64"
