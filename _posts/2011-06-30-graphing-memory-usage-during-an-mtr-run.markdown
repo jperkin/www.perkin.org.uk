@@ -85,13 +85,17 @@ plot "stats-mysql-trunk" every 60 using (($1)/60):(($2)/1024/1024) \
         title 'cluster-7.1 RAM (exc buf)' with lines
 {% endhighlight %}
 
-![MTR memory usage](/files/images/mtr-ram.png)
+<div class="postimg">
+  <img src="/files/images/mtr-ram.png" alt="MTR memory usage">
+</div>
 
 I then performed a valgrind run on mysql-trunk using similar scripts.  As
 valgrind takes considerably longer (and uses more RAM) I kept it separate as
 the combined graph isn't very clear:
 
-![MTR+valgrind memory usage](/files/images/mtr-ram-valgrind.png)
+<div class="postimg">
+  <img src="/files/images/mtr-ram-valgrind.png" alt="MTR+valgrind memory usage">
+</div>
 
 So, based on these results, the host machine (16GB RAM + 8GB RAM disk) is
 probably a sensible guide for now, and allows for some future growth.
