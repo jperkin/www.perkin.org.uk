@@ -49,7 +49,7 @@ about them!):
 $ sudo mkdir /var/ftp/incoming
 $ sudo chown ftp:ftp /var/ftp/incoming
 
-# This allows anonymous users to upload, but not see what''s in the directory
+# This allows anonymous users to upload, but not see what is in the directory
 $ sudo chmod 750 /var/ftp/incoming
 
 $ sudo chcon -u system_u -t public_content_rw_t /var/ftp/incoming
