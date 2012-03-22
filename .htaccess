@@ -1,5 +1,7 @@
 Redirect permanent /blog/2008/12/jumpstart_from_osx/ /posts/jumpstart-from-osx.html
 Redirect permanent /blog/2012/02/new-blog/ /posts/new-site-design.html
+# Hopefully temporary
+Redirect permanent /posts/serving-multiple-dns-search-domains-with-cisco-ios-dhcp-server.html /posts/serving-multiple-dns-search-domains-in-ios-dhcp.html
 RedirectMatch permanent /(blog|posts)/(\d+)/(\d+)/([^/]+)(/)?$ /posts/$4.html
 RedirectMatch permanent /posts/tag/([^/]+)(/)?$ /tags/$1.html
 Redirect permanent /feed/ /rss.xml
