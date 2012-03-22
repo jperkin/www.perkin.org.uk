@@ -17,4 +17,4 @@ publish: build
 test-publish: build
 	@cp .htaccess _site/
 	@rsync -avz --delete _includes/ www.perkin.org.uk:/content/vwww/www-test.perkin.org.uk/files/
-	@rsync -avz --delete --exclude "files" --exclude "tmp" _site/ www.perkin.org.uk:/content/vwww/www-test.perkin.org.uk/
+	@rsync -avz --delete --exclude "files" --exclude "tmp" --exclude "robots.txt" _site/ www.perkin.org.uk:/content/vwww/www-test.perkin.org.uk/
