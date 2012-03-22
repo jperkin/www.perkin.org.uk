@@ -4,5 +4,5 @@ auto: false
 safe: false
 pygments: true
 tag_dir: /tags
-tag_title_prefix: "Jonathan Perkin &raquo; "
-tag_title_suffix: ""
+tag_title_prefix: "Jonathan Perkin &raquo; Posts tagged &ldquo;"
+tag_title_suffix: "&rdquo;"
