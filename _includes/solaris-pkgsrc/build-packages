@@ -6,17 +6,22 @@ export PATH
 BRANCH="2009Q2"
 export BRANCH
 
-if [ ! -f /install/pkgsrc/bootstrap-${BRANCH}.tar ]; then
+PDIR=/install/pkgsrc
+
+if [ ! -f ${PDIR}/bootstrap-${BRANCH}.tar ]; then
     cd /content/pkgsrc-${BRANCH}/bootstrap
-    ./bootstrap --workdir=/tmp/pkgsrc --prefix=/opt/pkg --varbase=/var/opt/pkg --sysconfdir=/etc/opt/pkg --mk-fragment=/install/pkgsrc/misc/mk-include.conf --binary-kit=/install/pkgsrc/bootstrap-${BRANCH}.tar
+    ./bootstrap --workdir=/tmp/pkgsrc --prefix=/opt/pkg \
+                --varbase=/var/opt/pkg --sysconfdir=/etc/opt/pkg \
+                --mk-fragment=${PDIR}/misc/mk-include.conf \
+                --binary-kit=${PDIR}/bootstrap-${BRANCH}.tar
     rm -rf /tmp/pkgsrc
 fi
 
 if [ ! -f /opt/pkg/bin/bmake ]; then
-    (cd /; tar -xf /install/pkgsrc/bootstrap-${BRANCH}.tar)
+    (cd /; tar -xf ${PDIR}/bootstrap-${BRANCH}.tar)
 fi
 
 cd /content/pkgsrc-${BRANCH}
 
-/bin/ksh mk/bulk/build -s  2>&1 | tee -a /install/pkgsrc/logs/bulk-build-${BRANCH}.log
-/bin/ksh mk/bulk/upload -n 2>&1 | tee -a /install/pkgsrc/logs/bulk-upload-${BRANCH}.log
+/bin/ksh mk/bulk/build -s  2>&1 | tee -a ${PDIR}/logs/build-${BRANCH}.log
+/bin/ksh mk/bulk/upload -n 2>&1 | tee -a ${PDIR}/logs/upload-${BRANCH}.log

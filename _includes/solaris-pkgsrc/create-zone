@@ -104,8 +104,12 @@ dnl
 /^FEATURE.*msp/s/.127.0.0.1./mail.perkin.org.uk/
 wq!
 EOF
-(cd /zones/$name/root/etc/mail/cf/cf; /usr/ccs/bin/make submit.cf >/dev/null 2>&1)
-cp /zones/$name/root/etc/mail/cf/cf/submit.cf /zones/$name/root/etc/mail/submit.cf
+(
+  cd /zones/$name/root/etc/mail/cf/cf
+  /usr/ccs/bin/make submit.cf >/dev/null 2>&1
+)
+cp /zones/$name/root/etc/mail/cf/cf/submit.cf \
+   /zones/$name/root/etc/mail/submit.cf
 
 #
 # Use SHA512 crypted passwords, and change root's home directory.
@@ -133,7 +137,7 @@ ex /zones/$name/root/etc/ssh/sshd_config >/dev/null 2>&1 <<EOF
 wq
 EOF
 mkdir -m 0700 /zones/$name/root/root/.ssh
-cp /home/jperkin/.ssh/local_rsa.pub /zones/$name/root/root/.ssh/authorized_keys
+cp /home/jperkin/.ssh/id_rsa.pub /zones/$name/root/root/.ssh/authorized_keys
 
 #
 # Automount shared directories from global zone using direct mounts
