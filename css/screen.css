@@ -70,7 +70,8 @@ h4 {
  * `content' is the main layout holder for all viewable elements
  */
 #content {
-  margin: 20px 15%;
+  margin: 20px auto;
+  width: 760px;
 }
 
 /*
