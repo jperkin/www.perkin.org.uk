@@ -12,7 +12,6 @@ module Jekyll
       tag_title_prefix = site.config['tag_title_prefix'] || 'Posts Tagged &ldquo;'
       tag_title_suffix = site.config['tag_title_suffix'] || '&rdquo;'
       self.data['title'] = "#{tag_title_prefix}#{tag}#{tag_title_suffix}"
-      self.data['metacontent'] = "List of posts tagged &ldquo;#{tag}&rdquo;"
     end
   end
   class TagGenerator < Generator
