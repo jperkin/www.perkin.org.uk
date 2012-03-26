@@ -196,3 +196,22 @@ ul.posts span {
 ul.posts a {
   color: #000;
 }
+
+/*
+ * Syntax highlighting.  Actual colours are loaded from a separate file.
+ */
+.highlight {
+  border: 1px solid #aaaaaa;
+  overflow: hidden;
+  line-height: 1em;
+  text-shadow: none;
+  margin: 10px 20px;
+  width: auto;
+}
+.highlight:hover {
+  overflow: auto;
+}
+.highlight pre {
+  margin: 5px;
+  width: auto;
+}
