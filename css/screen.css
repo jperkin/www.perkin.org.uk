@@ -13,12 +13,11 @@ body {
   color: #000;
   font-family: 'Ubuntu', sans-serif;
   font-size: 16px;
-  font-weight: 300;
+  font-weight: normal;
 }
-/* Monospace Ubuntu for code sections */
 code {
-  font-family: 'Ubuntu Mono', monospace;
-  font-size: 16px;
+  font-family: monospace;
+  font-size: 12px;
 }
 
 /*
@@ -45,25 +44,28 @@ ul {
 h1 {
   border-bottom: 2px solid #e7e7e7;
   font-size: 32px;
-  font-weight: 500;
+  font-weight: bold;
+  line-height: 1.3em;
 }
 h2 {
   font-size: 18px;
-  font-weight: 500;
-  padding-bottom: 10px;
-  padding-top: 20px;
+  font-weight: bold;
+  padding: 10px 0px;
 }
 h3 {
   font-size: 16px;
-  font-weight: 500;
-  padding-bottom: 10px;
-  padding-top: 15px;
+  font-weight: bold;
+  line-height: 1.2em;
+  padding: 10px 0px;
 }
 h4 {
   font-size: 14px;
-  font-weight: 500;
-  padding-bottom: 10px;
-  padding-top: 15px;
+  font-weight: bold;
+  line-height: 1.2em;
+  padding: 10px 0px;
+}
+hr {
+  margin: 0px 80px;
 }
 
 /*
@@ -81,12 +83,12 @@ h4 {
  * the colour of links slightly when hovered.
  */
 #banner {
-  padding: 0px 60px 10px;
+  padding-bottom: 20px;
   text-align: right;
 }
 #bannertitle {
   font-size: 24px;
-  font-weight: 500;
+  font-weight: bold;
 }
 #bannertitle a {
   color: #000;
@@ -110,7 +112,7 @@ h4 {
 #postinfo {
   color: #777;
   font-size: 12px;
-  font-weight: 300;
+  font-weight: normal;
   padding: 5px;
 }
 #postinfo a {
@@ -144,10 +146,7 @@ h4 {
   padding: 5px 25px;
 }
 #postbody ul {
-  padding: 5px 25px;
-}
-#postbody li {
-  padding: 5px 0px;
+  padding: 0px 25px;
 }
 .posttable {
   margin: 10px 20px;
@@ -160,7 +159,7 @@ h4 {
   width: 100%;
 }
 .posttable th {
-  font-weight: 500;
+  font-weight: bold;
   text-align: center;
 }
 .posttable td {
@@ -177,7 +176,12 @@ h4 {
   padding: 0px 80px 20px;
 }
 #allposts {
+  background: #eeeeee;
+  border: 1px solid #dddddd;
   padding: 0px 80px;
+}
+#allposts h1 {
+  text-align: center;
 }
 ul.posts {
   line-height: 1.75em;
@@ -185,7 +189,9 @@ ul.posts {
   padding: 5px;
 }
 ul.posts span {
-  font-family: 'Ubuntu Mono', monospace;
+  font-family: monospace;
+  font-size: 0.8em;
+  line-height: 0.8em;
 }
 ul.posts a {
   color: #000;

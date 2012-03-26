@@ -6,20 +6,20 @@
  */
 
 // Macros
-$default: #000;
-$comment: #aaa;
-$string: #800;
-$stringesc: #808;
-$nameattr: #080;
-$namemacro: #004;
-$nametag: #008;
-$namevar: #008;
-$keyword: #880;
+$default:   #000000;
+$comment:   #aaaaaa;
+$string:    #880000;
+$stringesc: #880088;
+$nameattr:  #008800;
+$namemacro: #000044;
+$nametag:   #000088;
+$namevar:   #000088;
+$keyword:   #888800;
 
 .highlight      { background: #fefefe; }
 .highlight .c   { color: $comment; }            // Comment
-.highlight .err { background-color: #F0A0A0;    // Error
-                  color: #F00000; }
+.highlight .err { background-color: #f0a0a0;    // Error
+                  color: #f00000; }
 .highlight .k   { color: $keyword; }            // Keyword
 .highlight .cm  { color: $comment; }            // Comment.Multiline
 .highlight .cp  { color: $namemacro; }          // Comment.Preproc

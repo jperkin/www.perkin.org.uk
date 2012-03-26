@@ -1,9 +1,7 @@
 .highlight {
-  -webkit-border-radius: 10px;
-     -moz-border-radius: 10px;
-          border-radius: 10px;
+  border: 1px solid #aaa;
   overflow: hidden;
-  line-height: 1.50em;
+  line-height: 1em;
   text-shadow: none;
   margin: 10px 20px;
   width: auto;
@@ -12,7 +10,7 @@
   overflow: auto;
 }
 .highlight pre {
-  margin: 10px 20px;
+  margin: 5px;
   width: auto;
 }
 /* syntax definitions sourced from external file */
