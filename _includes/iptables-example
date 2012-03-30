@@ -1,0 +1,114 @@
+#!/bin/sh
+#
+# IPTables firewall script.  There are many.  This is mine.
+#
+
+
+#
+# Ensure sane path
+#
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+
+#
+# When running from the command line, provide a -v option to print the
+# installed rules at the end.
+#
+verbose=
+if [ "$1" = "-v" ]; then
+    shift
+    verbose=on
+fi
+
+#
+# Rather than duplicate entries for iptables and ip6tables, have some small
+# wrapper functions do it for us.
+#
+# ip4tbl - apply ruleset for just iptables
+# ip6tbl - apply ruleset for just ip6tables
+# iptbl  - apply ruleset for both iptables and ip6tables
+#
+ip4tbl()
+{
+    iptables "$@"
+}
+ip6tbl()
+{
+    ip6tables "$@"
+}
+iptbl()
+{
+    ip4tbl "$@"
+    ip6tbl "$@"
+}
+
+#
+# Flush all rulesets
+#
+iptbl -F
+iptbl -X
+
+#
+# Block by default except outgoing traffic
+#
+iptbl -P INPUT DROP
+iptbl -P FORWARD DROP
+iptbl -P OUTPUT ACCEPT
+
+#
+# Allow everything on loopback
+#
+iptbl -A INPUT -i lo -j ACCEPT
+
+#
+# Permit established connections
+#
+iptbl -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+#
+# Permit allowed services on all interfaces.  DNS is restricted to my public
+# DNS servers, this just runs a hidden master.
+#
+iptbl  -A INPUT -p tcp -m tcp --dport 22   -j ACCEPT
+iptbl  -A INPUT -p tcp -m tcp --dport 25   -j ACCEPT
+ip4tbl -A INPUT -p tcp -m tcp --dport 53   -s 85.158.46.77    -j ACCEPT
+ip4tbl -A INPUT -p udp -m udp --dport 53   -s 85.158.46.77    -j ACCEPT
+ip4tbl -A INPUT -p tcp -m tcp --dport 53   -s 193.108.199.128 -j ACCEPT
+ip4tbl -A INPUT -p udp -m udp --dport 53   -s 193.108.199.128 -j ACCEPT
+ip4tbl -A INPUT -p tcp -m tcp --dport 53   -s 193.108.199.130 -j ACCEPT
+ip4tbl -A INPUT -p udp -m udp --dport 53   -s 193.108.199.130 -j ACCEPT
+ip4tbl -A INPUT -p tcp -m tcp --dport 53   -s 213.5.89.46     -j ACCEPT
+ip4tbl -A INPUT -p udp -m udp --dport 53   -s 213.5.89.46     -j ACCEPT
+iptbl  -A INPUT -p tcp -m tcp --dport 80   -j ACCEPT
+iptbl  -A INPUT -p tcp -m tcp --dport 113  -j ACCEPT
+iptbl  -A INPUT -p tcp -m tcp --dport 443  -j ACCEPT
+iptbl  -A INPUT -p tcp -m tcp --dport 465  -j ACCEPT
+iptbl  -A INPUT -p tcp -m tcp --dport 993  -j ACCEPT
+
+#
+# Permit ICMP and traceroute
+#
+ip4tbl -A INPUT -p icmp -j ACCEPT
+ip6tbl -A INPUT -p ipv6-icmp -j ACCEPT
+iptbl  -A INPUT -p udp -m udp --dport 33434:33523 -j ACCEPT
+
+#
+# Log denied connections
+#
+LOGCOMMON="-m limit --limit 5/min -j LOG --log-prefix 'iptables: ' --log-level 7"
+iptbl  -A INPUT -p tcp       ${LOGCOMMON}
+iptbl  -A INPUT -p udp       ${LOGCOMMON}
+ip4tbl -A INPUT -p icmp      ${LOGCOMMON}
+ip6tbl -A INPUT -p ipv6-icmp ${LOGCOMMON}
+
+#
+# Finally, reject to keep open connections down
+#
+iptbl -A INPUT -j REJECT
+
+#
+# Display INPUT chain if verbose
+#
+if [ -n "${verbose}" ]; then
+    iptables  -L INPUT -vn --line-numbers
+    ip6tables -L INPUT -vn --line-numbers
+fi
