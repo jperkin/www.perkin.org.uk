@@ -5,14 +5,13 @@
  */
 
 /*
- * Font and background defaults for <body>, we use the Ubuntu Web Font
- * if available.
+ * Font and background defaults for <body>
  */
 body {
   background: #f7f7f7;
   color: #000;
-  font-family: 'Ubuntu', sans-serif;
-  font-size: 16px;
+  font-family: Verdana, 'DejaVu Sans', sans-serif;
+  font-size: 14px;
   font-weight: normal;
 }
 code {
@@ -88,7 +87,6 @@ hr {
 }
 #bannertitle {
   font-size: 24px;
-  font-weight: bold;
 }
 #bannertitle a {
   color: #000;
@@ -97,7 +95,7 @@ hr {
   text-decoration: none;
 }
 #bannerlinks {
-  font-size: 14px;
+  font-size: 12px;
 }
 #bannerlinks a {
   color: #444;
