@@ -13,7 +13,7 @@ I weighed myself every day on the Wii Fit, and kept a record of my progress.
 This morning I was finally under 90kg.  Here's how things have gone thus far:
 
 <div class="postimg">
-  <img src="/files/images/weight-jun11.png" alt="My weight loss between 1st January 2011 and 24th June 2011">
+  <img src="http://www.perkin.org.uk/files/images/weight-jun11.png" alt="My weight loss between 1st January 2011 and 24th June 2011">
 </div>
 
 And for the geeks, my gnuplot script, assuming an input file named `weight.txt` containing lines of the format `"%Y-%m-%d <weight>"`:

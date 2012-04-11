@@ -202,14 +202,14 @@ Ok, so here is the stuff I have for my setup and where I keep them:
   </thead>
   <tbody>
    <tr><td><code>/content/pkgsrc-2009Q2</code></td><td>Checked out pkgsrc tree, "2009Q2" branch</td></tr>
-   <tr><td><code>/content/scripts/<a href="/files/solaris-pkgsrc/create-zone">create-zone</a></code></td><td>Creates Solaris zone</td></tr>
-   <tr><td><code>/content/scripts/<a href="/files/solaris-pkgsrc/delete-zone">delete-zone</a></code></td><td>Uninstalls and deletes zone</td></tr>
-   <tr><td><code>/content/scripts/<a href="/files/solaris-pkgsrc/build-packages">build-packages</a></code></td><td>Bulk build packages inside the zone</td></tr>
-   <tr><td><code>/content/scripts/<a href="/files/solaris-pkgsrc/update-packages">update-packages</a></code></td><td>Updates installed packages</td></tr>
-   <tr><td><code>/install/pkgsrc/misc/<a href="/files/solaris-pkgsrc/mk.conf">mk.conf</a></code></td><td>Main pkgsrc configuration file</td></tr>
-   <tr><td><code>/install/pkgsrc/misc/<a href="/files/solaris-pkgsrc/mk-include.conf">mk-include.conf</a></code></td><td>Fragment file included in each zone's <code>mk.conf</code>, sources the global <code>mk.conf</code></td></tr>
-   <tr><td><code>/install/pkgsrc/misc/<a href="/files/solaris-pkgsrc/pkgchk.conf">pkgchk.conf</a></code></td><td><code>pkg_chk</code> configuration file</td></tr>
-   <tr><td><code>/install/zones/<a href="/files/solaris-pkgsrc/vm-generic.xml">vm-generic.xml</a></code></td><td>Shared SMF configuration file, symlinked to from e.g. "<code>vm0.xml</code>"</td></tr>
+   <tr><td><code>/content/scripts/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/create-zone">create-zone</a></code></td><td>Creates Solaris zone</td></tr>
+   <tr><td><code>/content/scripts/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/delete-zone">delete-zone</a></code></td><td>Uninstalls and deletes zone</td></tr>
+   <tr><td><code>/content/scripts/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/build-packages">build-packages</a></code></td><td>Bulk build packages inside the zone</td></tr>
+   <tr><td><code>/content/scripts/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/update-packages">update-packages</a></code></td><td>Updates installed packages</td></tr>
+   <tr><td><code>/install/pkgsrc/misc/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/mk.conf">mk.conf</a></code></td><td>Main pkgsrc configuration file</td></tr>
+   <tr><td><code>/install/pkgsrc/misc/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/mk-include.conf">mk-include.conf</a></code></td><td>Fragment file included in each zone's <code>mk.conf</code>, sources the global <code>mk.conf</code></td></tr>
+   <tr><td><code>/install/pkgsrc/misc/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/pkgchk.conf">pkgchk.conf</a></code></td><td><code>pkg_chk</code> configuration file</td></tr>
+   <tr><td><code>/install/zones/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/vm-generic.xml">vm-generic.xml</a></code></td><td>Shared SMF configuration file, symlinked to from e.g. "<code>vm0.xml</code>"</td></tr>
   </tbody>
  </table>
 </div>
