@@ -32,8 +32,8 @@ $ pkgin avail | wc -l
 
 Ok, so the headline might be slightly mis-leading, this isn't really apt-get
 but a tool which is very similar. This is work which builds upon my [previous
-post](/blog/2009/09/pkgsrc-on-solaris/) using pkgsrc to build binary packages
-on Solaris.
+post](http://www.perkin.org.uk/posts/pkgsrc-on-solaris.html) using pkgsrc to
+build binary packages on Solaris.
 
 See [http://imil.net/pkgin/](http://imil.net/pkgin/) for more information on
 pkgin.
