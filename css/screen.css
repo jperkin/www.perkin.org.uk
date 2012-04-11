@@ -161,8 +161,6 @@ hr {
 .posttable td {
   border: 1px solid #aaa;
   padding: 5px;
-  /* XXX: non-standard, but how else do you do it? */
-  word-wrap: break-word;
 }
 
 /*
@@ -200,7 +198,6 @@ ul.posts a {
   border: 1px solid #aaaaaa;
   overflow: hidden;
   line-height: 1em;
-  text-shadow: none;
   margin: 10px 20px;
   width: auto;
 }
