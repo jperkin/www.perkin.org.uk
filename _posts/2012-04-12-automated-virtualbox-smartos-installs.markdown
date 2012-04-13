@@ -5,7 +5,7 @@ tags: [smartos, virtualbox]
 ---
 
 This is a quick script I wrote to:
-* Download the latest live ISO image of SmartOS
+* Download the latest live ISO image of [SmartOS](http://smartos.org/)
 * Create a VirtualBox VM, or update an existing VM with the latest ISO
 * Configure the VM with a zones disk, and boot it!
 

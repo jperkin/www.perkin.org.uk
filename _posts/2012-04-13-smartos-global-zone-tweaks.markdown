@@ -4,10 +4,10 @@ title: SmartOS global zone tweaks
 tags: [smartos]
 ---
 
-The basic premise behind SmartOS is to provide a netbooted global zone, and
-then do actual work inside kvm or zone based virtual machines.  This has a
-number of advantages, not least that it's trivial to upgrade to a newer release
-- you simply boot a newer image.
+The basic premise behind [SmartOS](http://smartos.org/) is to provide a
+netbooted global zone, and then do actual work inside kvm or zone based virtual
+machines.  This has a number of advantages, not least that it's trivial to
+upgrade to a newer release - you simply boot a newer image.
 
 However, the read-only nature of the global zone means that if you want to make
 changes to the global zone, then they need to be read from permanent storage,
