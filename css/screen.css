@@ -162,6 +162,16 @@ hr {
   border: 1px solid #aaa;
   padding: 5px;
 }
+#postcomment {
+  color: #777;
+  font-size: 14px;
+  font-weight: normal;
+  padding-bottom: 10px;
+  text-align: center;
+}
+#postcomment a {
+  color: #777;
+}
 
 /*
  * Post lists
