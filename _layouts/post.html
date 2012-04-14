@@ -13,9 +13,9 @@ layout: default
         </div>
         <div id="postbody">
           {{ content }}
-        </div>{% if page.hnid %}
+        </div>{% if page.twid %}
         <div id="postcomment">
-          <a href="http://news.ycombinator.com/item?id={{ page.hnid }}">Discuss this post on HackerNews</a>
+          Discuss this post on <a href="https://twitter.com/#!/jperkin/status/{{ page.twid }}">Twitter</a>{% if page.hnid %} or <a href="http://news.ycombinator.com/item?id={{ page.hnid }}">HackerNews</a>{% endif %}
         </div>{% endif %}
         <hr />
       </div>
