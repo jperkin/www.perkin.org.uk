@@ -1,5 +1,6 @@
 ---
 hnid: 3837437
+twid: 190747570207858688
 layout: post
 title: SmartOS global zone tweaks
 tags: [smartos]
@@ -65,11 +66,15 @@ grep CONFIG_ /lib/svc/method/smartdc-config
 
 and then have a deeper look into the script to see how they are used ;-)
 
-## It's not Turing complete
+## Run ad-hoc scripts
 
 Note that while you may be tempted to think "aha, it's just a shell script, I
 can use it like `rc.local`", you can't - it's explicitly parsed into variables,
 and trying to put commands in will just break the init script.
 
-So, for now I haven't found a way to run commands at boot, not that I can think
-of any requirement to do so yet.
+However, the `/lib/svc/method/manifest-import` script does import any SMF
+manifests it finds in `/opt/custom/smf`, so if you want to run arbitrary
+scripts, then have a look at
+[@ryancnelson](https://twitter.com/#!/ryancnelson)'s
+[example](http://www.psychicfriends.net/blog/archives/2012/03/21/smartosorg_run_things_at_boot.html)
+and modify to suit your tastes.
