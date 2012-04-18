@@ -144,6 +144,9 @@ hr {
 #postbody ul {
   padding: 0px 25px;
 }
+#postbody li {
+  padding: 5px 0px;
+}
 .posttable {
   margin: 10px 20px;
 }
