@@ -20,12 +20,12 @@ default it will create a port forward so that you can `ssh -p 8322
 root@localhost` into the VM.
 
 Here's the script in full (or you can download it
-[here](http://www.perkin.org.uk/files/mksmartvm)):
+[here](http://{{ site.url }}/files/mksmartvm)):
 
 {% highlight bash %}
 {% include mksmartvm %}
 {% endhighlight %}
 
 Hopefully there will be a follow-up post which updates my [pkgsrc on
-Solaris](http://www.perkin.org.uk/posts/pkgsrc-on-solaris.html) for SmartOS,
+Solaris](http://{{ site.url }}/posts/pkgsrc-on-solaris.html) for SmartOS,
 including zone setup etc.

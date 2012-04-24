@@ -86,7 +86,7 @@ plot "stats-mysql-trunk" every 60 using (($1)/60):(($2)/1024/1024) \
 {% endhighlight %}
 
 <div class="postimg">
-  <img src="http://www.perkin.org.uk/files/images/mtr-ram.png" alt="MTR memory usage">
+  <img src="http://{{ site.url }}/files/images/mtr-ram.png" alt="MTR memory usage">
 </div>
 
 I then performed a valgrind run on mysql-trunk using similar scripts.  As
@@ -94,7 +94,7 @@ valgrind takes considerably longer (and uses more RAM) I kept it separate as
 the combined graph isn't very clear:
 
 <div class="postimg">
-  <img src="http://www.perkin.org.uk/files/images/mtr-ram-valgrind.png" alt="MTR+valgrind memory usage">
+  <img src="http://{{ site.url }}/files/images/mtr-ram-valgrind.png" alt="MTR+valgrind memory usage">
 </div>
 
 So, based on these results, the host machine (16GB RAM + 8GB RAM disk) is

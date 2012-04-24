@@ -49,7 +49,7 @@ a sandbox.  This has a number of benefits:
 * It avoids pollution from the host environment which may produce bad packages
 
 For creating a zone, I wrote the following
-[`create-zone`](http://www.perkin.org.uk/files/solaris-pkgsrc/create-zone)
+[`create-zone`](http://{{ site.url }}/files/solaris-pkgsrc/create-zone)
 script:
 
 {% highlight bash %}
@@ -57,7 +57,7 @@ script:
 {% endhighlight %}
 
 And the corresponding
-[`delete-zone`](http://www.perkin.org.uk/files/solaris-pkgsrc/delete-zone)
+[`delete-zone`](http://{{ site.url }}/files/solaris-pkgsrc/delete-zone)
 script is:
 
 {% highlight bash %}
@@ -66,11 +66,11 @@ script is:
 
 If you want to use them then there are some variables to set at the top, and
 you may want to scan through them for additional bits to change, for example
-[`create-zone`](http://www.perkin.org.uk/files/solaris-pkgsrc/create-zone)
+[`create-zone`](http://{{ site.url }}/files/solaris-pkgsrc/create-zone)
 copies my ssh public key which will most likely be wrong for your setup :-)
 
 One additional piece of configuration for
-[`create-zone`](http://www.perkin.org.uk/files/solaris-pkgsrc/create-zone) is
+[`create-zone`](http://{{ site.url }}/files/solaris-pkgsrc/create-zone) is
 an optional SMF xml file.  I use this file to disable inetd inside the zone for
 additional security, like so:
 
@@ -79,7 +79,7 @@ additional security, like so:
 {% endhighlight %}
 
 The file should be named &lt;yourzonename&gt;.xml.  Mine is named
-[`vm-generic.xml`](http://www.perkin.org.uk/files/solaris-pkgsrc/vm-generic.xml)
+[`vm-generic.xml`](http://{{ site.url }}/files/solaris-pkgsrc/vm-generic.xml)
 and I then create symlinks to it for each VM I want with that default
 configuration.
 
@@ -114,7 +114,7 @@ $ cvs update
 ## pkgsrc configuration
 
 pkgsrc is configured using a `mk.conf` file,
-[this](http://www.perkin.org.uk/files/solaris-pkgsrc/mk.conf) is mine:
+[this](http://{{ site.url }}/files/solaris-pkgsrc/mk.conf) is mine:
 
 {% highlight text %}
 {% include solaris-pkgsrc/mk.conf %}
@@ -126,9 +126,9 @@ guide to understand what it all means.
 
 As I do a lot of pkgsrc development I have a number of virtual machines up and
 running doing various bits and pieces.  Obviously I don't want to copy that
-[mk.conf](http://www.perkin.org.uk/files/solaris-pkgsrc/mk.conf) around, so I
+[mk.conf](http://{{ site.url }}/files/solaris-pkgsrc/mk.conf) around, so I
 also have a small
-[fragment](http://www.perkin.org.uk/files/solaris-pkgsrc/mk-include.conf) file
+[fragment](http://{{ site.url }}/files/solaris-pkgsrc/mk-include.conf) file
 which is appended to each virtual machine's `mk.conf` (using the
 `--mk-fragment` argument to `bootstrap`) and includes the global copy:
 
@@ -158,7 +158,7 @@ has extra features to make it possible to share `pkgchk.conf` across a number of
 machines and configure packages on a per-host, per-OS etc basis.
 
 Thus, a sample
-[`pkgchk.conf`](http://www.perkin.org.uk/files/solaris-pkgsrc/pkgchk.conf):
+[`pkgchk.conf`](http://{{ site.url }}/files/solaris-pkgsrc/pkgchk.conf):
 {% highlight bash %}
 {% include solaris-pkgsrc/pkgchk.conf %}
 {% endhighlight %}
@@ -171,23 +171,23 @@ use :-)
 
 Once everything is set up, I have two scripts to build then update my packages,
 intuitively called
-[`build-packages`](http://www.perkin.org.uk/files/solaris-pkgsrc/build-packages):
+[`build-packages`](http://{{ site.url }}/files/solaris-pkgsrc/build-packages):
 
 {% highlight bash %}
 {% include solaris-pkgsrc/build-packages %}
 {% endhighlight %}
 
 and
-[`update-packages`](http://www.perkin.org.uk/files/solaris-pkgsrc/update-packages):
+[`update-packages`](http://{{ site.url }}/files/solaris-pkgsrc/update-packages):
 
 {% highlight bash %}
 {% include solaris-pkgsrc/update-packages %}
 {% endhighlight %}
 
 These are pretty simple as all the hard work has all been done.
-[`build-packages`](http://www.perkin.org.uk/files/solaris-pkgsrc/build-packages)
+[`build-packages`](http://{{ site.url }}/files/solaris-pkgsrc/build-packages)
 is ran inside the zone, then
-[`update-packages`](http://www.perkin.org.uk/files/solaris-pkgsrc/update-packages)
+[`update-packages`](http://{{ site.url }}/files/solaris-pkgsrc/update-packages)
 on the main host.  These scripts hardcode the name of the branch currently
 used, so you will need to update this when moving to newer releases.
 
@@ -202,14 +202,14 @@ Ok, so here is the stuff I have for my setup and where I keep them:
   </thead>
   <tbody>
    <tr><td><code>/content/pkgsrc-2009Q2</code></td><td>Checked out pkgsrc tree, "2009Q2" branch</td></tr>
-   <tr><td><code>/content/scripts/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/create-zone">create-zone</a></code></td><td>Creates Solaris zone</td></tr>
-   <tr><td><code>/content/scripts/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/delete-zone">delete-zone</a></code></td><td>Uninstalls and deletes zone</td></tr>
-   <tr><td><code>/content/scripts/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/build-packages">build-packages</a></code></td><td>Bulk build packages inside the zone</td></tr>
-   <tr><td><code>/content/scripts/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/update-packages">update-packages</a></code></td><td>Updates installed packages</td></tr>
-   <tr><td><code>/install/pkgsrc/misc/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/mk.conf">mk.conf</a></code></td><td>Main pkgsrc configuration file</td></tr>
-   <tr><td><code>/install/pkgsrc/misc/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/mk-include.conf">mk-include.conf</a></code></td><td>Fragment file included in each zone's <code>mk.conf</code>, sources the global <code>mk.conf</code></td></tr>
-   <tr><td><code>/install/pkgsrc/misc/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/pkgchk.conf">pkgchk.conf</a></code></td><td><code>pkg_chk</code> configuration file</td></tr>
-   <tr><td><code>/install/zones/<a href="http://www.perkin.org.uk/files/solaris-pkgsrc/vm-generic.xml">vm-generic.xml</a></code></td><td>Shared SMF configuration file, symlinked to from e.g. "<code>vm0.xml</code>"</td></tr>
+   <tr><td><code>/content/scripts/<a href="http://{{ site.url }}/files/solaris-pkgsrc/create-zone">create-zone</a></code></td><td>Creates Solaris zone</td></tr>
+   <tr><td><code>/content/scripts/<a href="http://{{ site.url }}/files/solaris-pkgsrc/delete-zone">delete-zone</a></code></td><td>Uninstalls and deletes zone</td></tr>
+   <tr><td><code>/content/scripts/<a href="http://{{ site.url }}/files/solaris-pkgsrc/build-packages">build-packages</a></code></td><td>Bulk build packages inside the zone</td></tr>
+   <tr><td><code>/content/scripts/<a href="http://{{ site.url }}/files/solaris-pkgsrc/update-packages">update-packages</a></code></td><td>Updates installed packages</td></tr>
+   <tr><td><code>/install/pkgsrc/misc/<a href="http://{{ site.url }}/files/solaris-pkgsrc/mk.conf">mk.conf</a></code></td><td>Main pkgsrc configuration file</td></tr>
+   <tr><td><code>/install/pkgsrc/misc/<a href="http://{{ site.url }}/files/solaris-pkgsrc/mk-include.conf">mk-include.conf</a></code></td><td>Fragment file included in each zone's <code>mk.conf</code>, sources the global <code>mk.conf</code></td></tr>
+   <tr><td><code>/install/pkgsrc/misc/<a href="http://{{ site.url }}/files/solaris-pkgsrc/pkgchk.conf">pkgchk.conf</a></code></td><td><code>pkg_chk</code> configuration file</td></tr>
+   <tr><td><code>/install/zones/<a href="http://{{ site.url }}/files/solaris-pkgsrc/vm-generic.xml">vm-generic.xml</a></code></td><td>Shared SMF configuration file, symlinked to from e.g. "<code>vm0.xml</code>"</td></tr>
   </tbody>
  </table>
 </div>
@@ -245,7 +245,7 @@ $ /content/scripts/delete-zone vm0
 {% endhighlight %}
 
 This should do the lot.  Once
-[`build-packages`](http://www.perkin.org.uk/files/solaris-pkgsrc/build-packages)
+[`build-packages`](http://{{ site.url }}/files/solaris-pkgsrc/build-packages)
 has finished you should, if you configured your email address in build.conf,
 get an email with the bulk build results which looks similar to this:
 

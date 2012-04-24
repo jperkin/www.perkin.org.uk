@@ -4,7 +4,7 @@ title: Kickstart Oracle Linux in VirtualBox
 tags: [kickstart, oracle-linux, virtualbox]
 ---
 
-In my [previous post](http://www.perkin.org.uk/posts/kickstart-oracle-linux-from-ubuntu.html)
+In my [previous post](http://{{ site.url }}/posts/kickstart-oracle-linux-from-ubuntu.html)
 I configured an Ubuntu laptop as a Kickstart install server for a physical
 machine I wanted to build.
 
