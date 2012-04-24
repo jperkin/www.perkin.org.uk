@@ -8,7 +8,7 @@
     <meta name="author" content="Jonathan Perkin">{% if page.metacontent %}
     <meta name="description" content="{{ page.metacontent }}">{% endif %}
     <meta charset="utf-8">
-    <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8" />{% if site.url == 'www.perkin.org.uk' %}
     <script type="text/javascript">
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-29415017-1']);
@@ -18,7 +18,7 @@
         ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
       })();
-    </script>
+    </script>{% endif %}
   </head>
   <body>
     <div id="content">
