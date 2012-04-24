@@ -111,8 +111,6 @@ previously.  I've only shown the changes below, not the full file:
 $ sudo cp /usr/share/nginx/www/ks.cfg /usr/share/nginx/www/ks-vm.cfg
 {% endhighlight %}
 
-<br />
-
 {% highlight text %}
 # Update network configuration for DHCP instead of static
 network --bootproto=dhcp
