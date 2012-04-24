@@ -1,0 +1,289 @@
+---
+---
+/*
+ * The live copy of this file has comments removed, see the github version at
+ *
+ *   https://github.com/jperkin/www.perkin.org.uk/blob/master/css/screen.scss
+ *
+ * for more information.
+ */
+
+// I aim for a minimal design with minimal CSS.  Just enough to make it look
+// how I want :)
+
+// Macros
+$color_background: 		#ffffff;
+$color_maintext:   		#222222;
+$color_bannertitle:		#000000;
+$color_bannerlinks:		#444444;
+$color_postinfo:		#444444;
+$color_postinfo_a:		#444444;
+$color_postinfo_a_visited:	#666666;
+$color_postbody_a:		$color_maintext;
+$color_postbody_a_visited:	#666666;
+$color_table:			$color_maintext;
+$color_discuss:			$color_maintext;
+$color_discuss_a:		$color_maintext;
+$color_posts_a:			$color_maintext;
+$color_posts_a_visited:		#666666;
+//
+$margin_indent:			1.5em;	// Indentation of img/table/code etc
+$margin_postbody:		1.5em;	// Margin for main post body
+$margin_v:			1.5em;	// General vertical margin
+
+//
+// Load fonts, saved locally from Google Fonts
+//
+// - Bitter  (http://fonts.googleapis.com/css?family=Bitter:400,700,400italic)
+//
+
+@font-face {
+  font-family: 'Bitter';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Bitter-Italic'), url('http://{{ site.url }}/files/fonts/Bitter-Italic.woff') format('woff');
+}
+@font-face {
+  font-family: 'Bitter';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Bitter-Regular'), url('http://{{ site.url }}/files/fonts/Bitter-Regular.woff') format('woff');
+}
+@font-face {
+  font-family: 'Bitter';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Bitter-Bold'), url('http://{{ site.url }}/files/fonts/Bitter-Bold.woff') format('woff');
+}
+
+//
+// Font and background defaults for <body>
+//
+body {
+  background: $color_background;
+  color: $color_maintext;
+  font-family: Bitter, Georgia, sans-serif;
+  font-size: 16px;
+  font-weight: 100;
+}
+code {
+  font-family: monospace;
+  font-size: 12px;
+}
+
+//
+// Put back defaults previously removed by reset.css
+//
+a {
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+em {
+  font-style: italic;
+}
+ol {
+  list-style-type: decimal;
+}
+strong {
+  font-weight: bold;
+}
+ul {
+  list-style-type: disc;
+}
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.2em;
+}
+h1 {
+  border-bottom: 2px solid #e7e7e7;
+  font-size: 2em;
+}
+h2 {
+  font-size: 1.6em;
+}
+h3 {
+  font-size: 1.5em;
+}
+h4 {
+  font-size: 1.4em;
+}
+h5 {
+  font-size: 1.3em;
+}
+h6 {
+  font-size: 1.2em;
+}
+hr {
+  margin: 0px 80px;
+}
+
+//
+// `content' is the main layout holder for all viewable elements
+//
+#content {
+  margin: 20px auto;
+  width: 760px;
+}
+
+//
+// `banner' contains the main page title and some static links
+//
+// Make the main title large, links smaller, don't underline links, and change
+// the colour of links slightly when hovered.
+//
+#banner {
+  font-family: Verdana, 'DejaVu Sans', sans-serif;
+  font-weight: 100;
+  padding-bottom: 20px;
+  text-align: right;
+}
+#bannertitle {
+  font-size: 24px;
+}
+#bannertitle a {
+  color: $color_bannertitle;
+}
+#bannertitle a:hover {
+  text-decoration: none;
+}
+#bannerlinks {
+  font-size: 12px;
+}
+#bannerlinks a {
+  color: $color_bannerlinks;
+}
+
+/*
+ * #post* contain the actual content
+ */
+#post {
+  padding-bottom: 20px;
+}
+#postinfo {
+  color: $color_postinfo;
+  font-family: Verdana, 'DejaVu Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 100;
+  padding: 0.2em 0;
+}
+#postinfo a {
+  color: $color_postinfo_a;
+}
+#postinfo a:visited {
+  color: $color_postinfo_a_visited;
+}
+#postdate {
+  float: left;
+}
+#posttags {
+  text-align: right;
+}
+#postbody {
+  line-height: 1.6em;
+  margin: $margin_postbody;
+}
+#postbody a {
+  color: $color_postbody_a;
+  text-decoration: underline;
+}
+#postbody a:visited {
+  color: $color_postbody_a_visited;
+}
+#postbody p {
+  margin: $margin_v 0;
+}
+#postbody .postimg {
+  margin: $margin_v $margin_indent;
+}
+#postbody img {
+  max-width: 100%;
+  width: auto;
+}
+#postbody ol {
+  margin: 1.5em;
+}
+#postbody ul {
+  margin: 1.5em;
+}
+#postbody li {
+  margin: 0.2em 0;
+}
+.posttable {
+  margin: $margin_v $margin_indent;
+}
+.posttable table {
+  color: $color_table;
+  line-height: 1.5em;
+  table-layout: fixed;
+  width: 100%;
+}
+.posttable th {
+  font-weight: 100;
+  text-align: center;
+}
+.posttable td {
+  background: #fafafa;
+  border: 1px solid #aaa;
+  padding: 5px;
+}
+#postdiscuss {
+  color: $color_discuss;
+  font-family: Verdana, 'DejaVu Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 100;
+  padding-bottom: 10px;
+  text-align: center;
+}
+#postdiscuss a {
+  color: $color_discuss_a;
+}
+
+/*
+ * Post lists
+ */
+#taggedposts {
+  padding: 0px 80px 20px;
+}
+#allposts {
+  background: #eeeeee;
+  border: 1px solid #dddddd;
+  padding: 0px 80px;
+}
+#allposts h1 {
+  text-align: center;
+}
+ul.posts {
+  line-height: 1.75em;
+  list-style-type: none;
+  padding: 5px;
+}
+ul.posts span {
+  font-family: monospace;
+  font-size: 0.8em;
+  line-height: 0.8em;
+}
+ul.posts a {
+  color: $color_posts_a;
+}
+ul.posts a:visited {
+  color: $color_posts_a_visited;
+}
+
+/*
+ * Syntax highlighting.  Actual colours are loaded from a separate file.
+ */
+.highlight {
+  border: 1px solid #aaaaaa;
+  overflow: hidden;
+  line-height: 1em;
+  margin: $margin_v $margin_indent;
+  width: auto;
+}
+.highlight:hover {
+  overflow: auto;
+}
+.highlight pre {
+  margin: 5px;
+  width: auto;
+}
