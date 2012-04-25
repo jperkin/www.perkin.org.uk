@@ -1,6 +1,4 @@
 ---
-hnid: 3837437
-twid: 190747570207858688
 layout: post
 title: SmartOS global zone tweaks
 tags: [smartos]

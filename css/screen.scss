@@ -22,8 +22,8 @@ $color_postinfo_a_visited:	#666666;
 $color_postbody_a:		$color_maintext;
 $color_postbody_a_visited:	#666666;
 $color_table:			$color_maintext;
-$color_discuss:			$color_maintext;
-$color_discuss_a:		$color_maintext;
+$color_share:			$color_maintext;
+$color_share_a:			$color_maintext;
 $color_posts_a:			$color_maintext;
 $color_posts_a_visited:		#666666;
 //
@@ -227,16 +227,16 @@ hr {
   border: 1px solid #aaa;
   padding: 5px;
 }
-#postdiscuss {
-  color: $color_discuss;
+#postshare {
+  color: $color_share;
   font-family: Verdana, 'DejaVu Sans', sans-serif;
   font-size: 12px;
   font-weight: 100;
   padding-bottom: 10px;
   text-align: center;
 }
-#postdiscuss a {
-  color: $color_discuss_a;
+#postshare a {
+  color: $color_share_a;
 }
 
 /*

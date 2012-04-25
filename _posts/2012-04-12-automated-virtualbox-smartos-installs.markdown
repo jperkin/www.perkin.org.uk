@@ -1,6 +1,5 @@
 ---
 layout: post
-twid: 190432389116342272
 title: Automated VirtualBox SmartOS installs
 tags: [smartos, virtualbox]
 ---

@@ -7,7 +7,11 @@
     <link href="/css/autumn.css" rel="stylesheet" type="text/css" />
     <meta name="author" content="Jonathan Perkin">{% if page.metacontent %}
     <meta name="description" content="{{ page.metacontent }}">{% endif %}
-    <meta charset="utf-8">
+    <meta charset="utf-8">{% if page.id %}
+    <meta property="og:title" content="{{ page.title }}" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="http://{{ site.url }}{{ page.url }}" />
+    <meta property="og:image" content="http://{{ site.url }}/files/images/avatar.jpg" />{% endif %}
     <meta http-equiv="content-type" content="text/html;charset=UTF-8" />{% if site.url == 'www.perkin.org.uk' %}
     <script type="text/javascript">
       var _gaq = _gaq || [];

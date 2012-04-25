@@ -13,9 +13,13 @@ layout: default
         </div>
         <div id="postbody">
           {{ content }}
-        </div>{% if page.twid %}
-        <div id="postdiscuss">
-          Discuss this post on <a href="https://twitter.com/#!/jperkin/status/{{ page.twid }}">Twitter</a>{% if page.hnid %} or <a href="http://news.ycombinator.com/item?id={{ page.hnid }}">HackerNews</a>{% endif %}
-        </div>{% endif %}
+        </div>
+        <div id="postshare">
+          Share this post on
+          <a href='http://twitter.com/share?url=http://{{ site.url }}{{ page.url }}&text="{{ page.title }}" by @jperkin'>Twitter</a>,
+          <a href='http://news.ycombinator.com/submitlink?u=http://{{ site.url }}{{ page.url }}&t={{ page.title }}'>HackerNews</a>,
+          <a href='http://www.facebook.com/sharer/sharer.php?u=http://{{ site.url }}{{ page.url }}&t={{ page.title }}'>Facebook</a> or 
+          <a href='https://plus.google.com/share?url=http://{{ site.url }}{{ page.url }}'>Google+</a>
+        </div>
         <hr />
       </div>
