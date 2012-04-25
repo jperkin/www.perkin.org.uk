@@ -58,7 +58,7 @@ exit
 
 As for the install, go with the sensible defaults, other than:
 
-* change keyboard layout to 'uk'
+* change keyboard layout to &ldquo;uk&rdquo;
 * manually configure network, enable rtsol
 * start ntpd
 * do not expect to run X

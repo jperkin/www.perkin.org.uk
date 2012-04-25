@@ -10,7 +10,7 @@ This is a quick script I wrote to:
 * Configure the VM with a zones disk, and boot it!
 
 For the first install you'll need to:
-* Configure the network (likely just 'dhcp')
+* Configure the network (likely just &ldquo;dhcp&rdquo;)
 * Add `c0d0` as the zones disk
 * Set a root password
 

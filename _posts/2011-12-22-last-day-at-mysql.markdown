@@ -19,10 +19,10 @@ started working with back in 2007 are still with the company (don't believe the
 FUD, folks) and working harder than ever.
 
 I'm most proud of the work we have done internally to ensure our MySQL releases
-are in excellent shape.  When I first joined, our internal 'PushBuild' system
-was very limited, only able to handle a small number of pushes with reduced
-testing across a few platforms, and the builds produced were completely
-different to those that were released.
+are in excellent shape.  When I first joined, our internal
+&ldquo;PushBuild&rdquo; system was very limited, only able to handle a small
+number of pushes with reduced testing across a few platforms, and the builds
+produced were completely different to those that were released.
 
 Nowadays, thanks to the investment made by Sun and Oracle, we have a large
 server farm producing thousands of builds and hundreds of gigabytes of data

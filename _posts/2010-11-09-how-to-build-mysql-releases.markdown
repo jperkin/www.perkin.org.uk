@@ -9,7 +9,8 @@ work](http://forge.mysql.com/wiki/CMake) available in MySQL 5.5 is that in the
 MySQL Release Engineering team we have been able to make it easy for users and
 developers to build MySQL exactly as we do for the official releases.  For too
 long there has been a disconnect between the binaries produced as part of a
-regular '`./configure; make`' build and what we ship to users and customers.
+regular &ldquo;`./configure; make`&rdquo; build and what we ship to users and
+customers.
 
 We're still not exactly where we want to be, there are still some parts which
 need to be integrated into the server tree, but for now it's relatively
@@ -56,10 +57,10 @@ ensure the correct compiler etc is used.  Here are some that we use.
 
 ### Avoid libstdc++ dependancy
 
-In order to create 'generic' binaries, on GCC platforms we compile using
-`CXX=gcc`.  This avoids `libstdc++` being pulled in, and means that the server
-will run across a larger range of releases as you do not rely on having the
-exact version of `libstdc++` installed by your system package manager.
+In order to create &ldquo;generic&rdquo; binaries, on GCC platforms we compile
+using `CXX=gcc`.  This avoids `libstdc++` being pulled in, and means that the
+server will run across a larger range of releases as you do not rely on having
+the exact version of `libstdc++` installed by your system package manager.
 
 Paste this before running cmake.
 

@@ -66,9 +66,9 @@ and then have a deeper look into the script to see how they are used ;-)
 
 ## Run ad-hoc scripts
 
-Note that while you may be tempted to think "aha, it's just a shell script, I
-can use it like `rc.local`", you can't - it's explicitly parsed into variables,
-and trying to put commands in will just break the init script.
+Note that while you may be tempted to think &ldquo;aha, it's just a shell
+script, I can use it like `rc.local`&rdquo;, you can't - it's explicitly parsed
+into variables, and trying to put commands in will just break the init script.
 
 However, the `/lib/svc/method/manifest-import` script does import any SMF
 manifests it finds in `/opt/custom/smf`, so if you want to run arbitrary

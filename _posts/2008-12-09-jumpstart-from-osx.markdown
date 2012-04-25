@@ -178,11 +178,13 @@ The `menu.lst` file includes kernel arguments and allows you to choose which
 type of install to perform at startup. My file listed below has 3 choices:
 
 * Unattended install using a graphical environment (if available). The
-  'install' keyword after the kernel instructs it to perform an unattended
-  install, so long as it can find the necessary settings from sysidcfg etc.
+  &ldquo;install&rdquo; keyword after the kernel instructs it to perform an
+  unattended install, so long as it can find the necessary settings from
+  sysidcfg etc.
 * As above, but force the use of the console and do not start a graphical
-  environment (using the 'nowin' keyword)
-* A manual install, so you need to go through the steps of layout out disks, selecting packages, etc.
+  environment (using the &ldquo;nowin&rdquo; keyword)
+* A manual install, so you need to go through the steps of layout out disks,
+  selecting packages, etc.
 
 {% highlight console %}
 $ vi /install/tftpboot/boot/grub/menu.lst
@@ -291,4 +293,5 @@ rebooting, installing, rebooting.. until you change your boot options.
 
 If this happens, I recommend making more cups of tea until you happen to return
 in time to change the BIOS settings. If you aren't able to do this for a while,
-you may need to add the extra steps 8, 9 and 10 titled "Visit The Bathroom".
+you may need to add the extra steps 8, 9 and 10 titled &ldquo;Visit The
+Bathroom&rdquo;.

@@ -92,9 +92,9 @@ and `/lib`.
 ## OSX
 
 For OSX we don't actually use a chroot tarball but instead create a sparse disk
-image.  Currently the size of the "chroot" is very large as there's no easy way
-to strip down an OSX install, so mounting a disk image is faster than unpacking
-a chroot, plus it preserves various HFS-specific attributes.
+image.  Currently the size of the &ldquo;chroot&rdquo; is very large as there's
+no easy way to strip down an OSX install, so mounting a disk image is faster
+than unpacking a chroot, plus it preserves various HFS-specific attributes.
 
 You will likely need at least the BSD, BaseSystem, and Essentials packages.
 

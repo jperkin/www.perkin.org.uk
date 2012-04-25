@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "'apt-get' and 5,000 packages for Solaris10/x86"
+title: "&ldquo;apt-get&rdquo; and 5,000 packages for Solaris10/x86"
 tags: [pkgin, pkgsrc, solaris]
 ---
 

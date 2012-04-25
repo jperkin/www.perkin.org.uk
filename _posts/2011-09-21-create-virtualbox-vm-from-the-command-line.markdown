@@ -13,7 +13,7 @@ We're using Windows Server 2008 64bit as an example, modify to taste.
 $ VM='Windows-2008-64bit'
 {% endhighlight %}
 
-Create a 32GB 'dynamic' disk.
+Create a 32GB &ldquo;dynamic&rdquo; disk.
 
 {% highlight console %}
 $ VBoxManage createhd --filename $VM.vdi --size 32768

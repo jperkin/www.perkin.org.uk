@@ -67,8 +67,8 @@ $ VBoxManage modifyvm "${VM}" --boot1 disk --boot2 net --boot3 none --boot4 none
 
 Change NIC type from the default e1000, as a vanilla VirtualBox install does
 not include the firmware necessary to network boot from that device – it is
-available in the "VirtualBox Extension Pack" add-on.  Switch to a plain PCNet
-Fast III which does include PXE firmware.
+available in the &ldquo;VirtualBox Extension Pack&rdquo; add-on.  Switch to a
+plain PCNet Fast III which does include PXE firmware.
 
 {% highlight console %}
 $ VBoxManage modifyvm "${VM}" --nictype1 Am79C973
