@@ -16,7 +16,7 @@ static site from templates.
 
 I'd seen a few sites I liked the look of, and I loved the idea of simplifying
 my site (and editing posts in vim!), and so the end result is the site you see
-now.  The theme is based on [skim.la](http://skim.la/)'s site.
+now.
 
 I pondered implementing something like [disqus](http://disqus.com/) for
 comments, but honestly I get so few proper responses, compared to the hundreds
