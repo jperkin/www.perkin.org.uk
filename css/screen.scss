@@ -27,9 +27,10 @@ $color_share_a:			$color_maintext;
 $color_posts_a:			$color_maintext;
 $color_posts_a_visited:		#666666;
 //
-$margin_indent:			1.5em;	// Indentation of img/table/code etc
-$margin_postbody:		1.5em;	// Margin for main post body
-$margin_v:			1.5em;	// General vertical margin
+$margin_global:			1em;
+$margin_indent:			$margin_global;	// Indentation of img/table/code etc
+$margin_postbody:		$margin_global;	// Margin for main post body
+$margin_v:			$margin_global;	// General vertical margin
 
 //
 // Load fonts, saved locally from Google Fonts
@@ -201,10 +202,10 @@ hr {
   width: auto;
 }
 #postbody ol {
-  margin: 1.5em;
+  margin: $margin_indent;
 }
 #postbody ul {
-  margin: 1.5em;
+  margin: $margin_indent;
 }
 #postbody li {
   margin: 0.2em 0;
