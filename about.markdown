@@ -3,34 +3,45 @@ layout: static
 title: About Me
 ---
 
-Thirty-something geek.  Married.  Three kids.  Live near London, in the UK.
+Thirty-something geek.  Married.  Three kids.  Living just outside London in
+the UK.
 
 ## Work
 
 I've been interested in computers from an early age, and am very privileged to
 these days get paid to mess around on them for a living.
 
-My career started at [Netcraft](http://www.netcraft.com/) as a Unix sysadmin,
-then onto the [BBC](http://www.bbc.co.uk/) where I did a lot more sysadmin
-making bbc.co.uk work.
+* I started my career in 2000, as a Unix Systems administrator at
+  [Netcraft](http://www.netcraft.com/).
 
-However, having been interested in open source since the mid 90s and being
-involved with projects such as [NetBSD](http://www.netbsd.org/) along the way,
-I was keen to do more of the development side of things, and was very grateful
-to join [MySQL AB](http://en.wikipedia.org/wiki/MySQL_AB) as a release
-engineer, which eventually took me through
-[Sun Microsystems](http://en.wikipedia.org/wiki/Sun_Microsystems) and finally
-into [Oracle](http://www.oracle.com/) where I currently work as a release
-engineer for Oracle Linux and other Linux products.
+* After that, between 2001 and 2007 I worked for the
+  [BBC](http://www.bbc.co.uk/), where I was an Internet Engineer / Unix Systems
+  Administrator looking after the bbc.co.uk infrastructure, including their
+  very popular websites as well providing Internet access for 25,000 BBC staff.
+
+* I then joined [MySQL AB](http://en.wikipedia.org/wiki/MySQL_AB) in 2007 as a
+  Senior Release Engineer, producing MySQL releases and doing some more systems
+  administration.  During that time we were acquired twice, first by
+  [Sun Microsystems](http://en.wikipedia.org/wiki/Sun_Microsystems) and then by
+  [Oracle](http://www.oracle.com/).  In 2011 I became the Release Engineering
+  Manager.
+
+* In early 2012 I stayed within Oracle but moved over to the Linux Group,
+  becoming a Release Engineer for Oracle Linux and Oracle VM.
+
+* That didn't last very long, however, as I was offered an amazing position at
+  [Joyent](http://www.joyent.com/) which is where I currently work, hacking on
+  [pkgsrc](http://www.pkgsrc.org/) running on [SmartOS](http://smartos.org/)!
 
 My professional profile is available on
 [LinkedIn](http://www.linkedin.com/in/jperkin).
 
 ## Rest
 
-I love spending time with the family.  I have an awesome wife who keeps me sane
+I love spending time with my family.  I have an awesome wife who keeps me sane
 and full of yummy food, and three fantastic kids who can be hard work a lot of
-the time, but they are great fun, very talented, and help to keep me humble.
+the time, but they are great fun, very talented, and can be a great source of
+joy!
 
 Being a geek I work on technical stuff outside of work, and enjoy writing open
 source bits and pieces which can be found on
