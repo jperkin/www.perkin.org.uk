@@ -5,7 +5,7 @@ tags: [smartos]
 ---
 
 The basic premise behind [SmartOS](http://smartos.org/) is to provide a
-netbooted global zone, and then do actual work inside kvm or zone based virtual
+netbooted global zone, and then do actual work inside KVM or zone-based virtual
 machines.  This has a number of advantages, not least that it's trivial to
 upgrade to a newer release - you simply boot a newer image.
 
