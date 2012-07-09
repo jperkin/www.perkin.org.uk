@@ -24,14 +24,16 @@ these days get paid to mess around on them for a living.
   administration.  During that time we were acquired twice, first by
   [Sun Microsystems](http://en.wikipedia.org/wiki/Sun_Microsystems) and then by
   [Oracle](http://www.oracle.com/).  In 2011 I became the Release Engineering
-  Manager.
+  Manager, and in 2012 I moved over to the Linux Group as a Release Engineer
+  for Oracle Linux and Oracle VM.
 
-* In early 2012 I stayed within Oracle but moved over to the Linux Group,
-  becoming a Release Engineer for Oracle Linux and Oracle VM.
-
-* That didn't last very long, however, as I was offered an amazing position at
-  [Joyent](http://www.joyent.com/) which is where I currently work, hacking on
-  [pkgsrc](http://www.pkgsrc.org/) running on [SmartOS](http://smartos.org/)!
+I am currently working for
+[Joyent](http://{{ site.url }}/posts/goodbye-oracle-hello-joyent.html), hacking
+on [pkgsrc](http://www.pkgsrc.org/) for [SmartOS](http://smartos.org/), our
+advanced operating system designed for multi-tenancy environments (i.e. "Cloud
+Computing").  This allows me to combine my passions for pkgsrc, operating
+system development, and large-scale infrastructure, and I love working with an
+extremely talented set of developers.
 
 My professional profile is available on
 [LinkedIn](http://www.linkedin.com/in/jperkin).
