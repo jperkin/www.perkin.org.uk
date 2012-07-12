@@ -19,6 +19,10 @@ In addition, thanks to binary compatibility, these packages can also be used on
 your illumos distribution of choice (please let me know if this is not the
 case!) if your native package manager does not provide the software you want.
 
+*2012-07-10: Currently there is a dependency on the gcc runtime only available
+on SmartOS, I am rebuilding the packages to remove this which will take around
+1 week to complete, but for now they will not work across illumos.*
+
 Note that these packages do not come with SMF support, and may be different
 from our official packages in terms of build options, etc.  Also, to avoid
 conflict with our official packages, these have been built under a different
