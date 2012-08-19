@@ -19,10 +19,6 @@ In addition, thanks to binary compatibility, these packages can also be used on
 your illumos distribution of choice (please let me know if this is not the
 case!) if your native package manager does not provide the software you want.
 
-*2012-07-10: Currently there is a dependency on the gcc runtime only available
-on SmartOS, I am rebuilding the packages to remove this which will take around
-1 week to complete, but for now they will not work across illumos.*
-
 Note that these packages do not come with SMF support, and may be different
 from our official packages in terms of build options, etc.  Also, to avoid
 conflict with our official packages, these have been built under a different
@@ -45,8 +41,15 @@ compared to our official packages:
 To use them, run the following:
 
 {% highlight console %}
+# For SmartOS use the original build.
 $ curl http://pkgsrc.smartos.org/packages/SmartOS/2012Q2/bootstrap.tar.gz \
-    | (cd /; sudo gtar -zxpf -)
+    | gzip -dc | (cd /; sudo tar -xpf -)
+
+# For other illumos, use the updated build which should work, but has fewer
+# packages, and you will need to ignore warnings about x86_64 != i386.
+$ curl http://pkgsrc.smartos.org/packages/SmartOS/2012Q2j1/bootstrap.tar.gz \
+    | gzip -dc | (cd /; sudo tar -xpf -)
+
 $ PATH=/opt/pkg/sbin:/opt/pkg/bin:$PATH
 $ sudo pkgin -y update
 $ pkgin avail | wc -l
