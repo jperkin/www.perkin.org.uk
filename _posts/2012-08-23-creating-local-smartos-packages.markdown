@@ -74,7 +74,8 @@ $ (cd files; find * -type f | sort) >packlist
 The `packlist` file supports many directives which are lines beginning with
 `@<cmd>`.  These let you do things such as change file permissions once the
 file has been installed.  See the 'PACKING LIST DETAILS' section of
-`pkg_create(1)` for more information.
+[`pkg_create(1)`](http://netbsd.gw.com/cgi-bin/man-cgi?pkg_create) for more
+information.
 
 ### Package metadata
 
@@ -250,5 +251,6 @@ Memory (RSS) Free   8100M
 
 This covers the basics and should be enough to get started.  As mentioned,
 there are many other options available, and I suggest that if you need
-additional functionality you take a look at the `pkg_create` manual page, or
+additional functionality you take a look at the
+[`pkg_create`](http://netbsd.gw.com/cgi-bin/man-cgi?pkg_create) manual page, or
 simply use `pkg_info -X` on more complicated packages to see what they do.
