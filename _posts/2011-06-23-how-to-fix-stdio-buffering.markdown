@@ -12,7 +12,8 @@ $ tail -f /var/log/foo | egrep -v 'some|stuff' | sed | awk
 
 and wonder why nothing is printed, even though you know some text has matched.
 The problem is that stdio is being buffered, and there's a very good write-up
-of the problem here so I won't repeat the technical background.
+of the problem [here](http://www.pixelbeat.org/programming/stdio_buffering/) so
+I won't repeat the technical background.
 
 What I will provide though is how to fix it for common cases.
 
