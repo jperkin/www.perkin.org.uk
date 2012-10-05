@@ -8,7 +8,7 @@ Here's how:
 
 {% highlight console %}
 # Install pkg_* tools and the 'pkgin' package manager
-$ pkgadd -d http://www.netbsd.org/~sketch/TNFpkgsrc-x86.pkg all
+$ pkgadd -d http://www.netbsd.org/~jperkin/TNFpkgsrc-x86.pkg all
 
 # Add tools to PATH
 $ PATH=/opt/pkg/sbin:/opt/pkg/bin:$PATH
