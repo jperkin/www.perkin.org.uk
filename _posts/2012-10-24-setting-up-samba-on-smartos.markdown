@@ -36,6 +36,7 @@ $ vi /usbkey/vmcfg/store.json
   "zfs_io_priority": 30,
   "image_uuid": "55330ab4-066f-11e2-bd0f-434f2462fada",
   "max_physical_memory": 256,
+  "quota": 750,
   "alias": "store",
   "hostname": "store",
   "resolvers": [
