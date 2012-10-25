@@ -80,8 +80,13 @@ $ pkgin -y install samba-3.6
 
 ## Configure Samba
 
-This part will differ based on your requirements, here is a simple working
-example of a shared mount with full guest read/write access.
+This part will differ based on your requirements, here are a couple of simple
+examples.
+
+#### Shared guest mount with full read/write access
+
+For if you just want somewhere to share stuff on a local network with no
+security.
 
 {% highlight bash %}
 # Create shared mount user and mountpoint.
@@ -111,6 +116,46 @@ $ vi /etc/opt/pkg/samba/smb.conf
   writable = yes
   printable = no
 {% endhighlight %}
+
+#### Shared mount with per-user access
+
+For a bit more fine-grained control.
+
+{% highlight bash %}
+# Create per-user accounts and mountpoint.
+$ groupadd -g 1000 alice
+$ useradd -u 1000 -g 1000 -c "Alice" -s /usr/bin/false -d /store alice
+$ groupadd -g 1001 bob
+$ useradd -u 1001 -g 1001 -c "Bob" -s /usr/bin/false -d /store bob
+$ mkdir /store
+$ chmod 1777 /store
+$ /opt/pkg/bin/smbpasswd -a alice
+$ /opt/pkg/bin/smbpasswd -a bob
+{% endhighlight %}
+
+{% highlight bash %}
+# Configure Samba
+$ vi /etc/opt/pkg/samba/smb.conf
+{% endhighlight %}
+
+{% highlight ini %}
+[global]
+  security = user
+  load printers = no
+
+; Comment out [homes] section
+
+[store]
+  path = /store
+  valid users = alice bob
+  public = no
+  writable = yes
+  printable = no
+{% endhighlight %}
+
+Access will be via username and the password set with `smbpasswd`.  Users will
+be able to create files and read other user files, but will only be able to
+modify files they created.
 
 ## Startup scripts
 
@@ -153,14 +198,14 @@ $ /etc/rc2.d/S99samba start
 In order for shares to automatically show up in e.g. the OSX Finder, you will
 need to be running some kind of mDNS service on the server.
 
-The easiest solution is to simply enable `dns/multicast` in the global zone,
-i.e.:
+The easiest solution is to simply enable `dns/multicast` in the zone, i.e.:
 
 {% highlight bash %}
 $ svcadm enable dns/multicast
 {% endhighlight %}
 
-This will then show up based on the hostname of the server, and clicking on it should show the `store` mount we created.
+This will then show up based on the hostname of the server, and clicking on it
+should show the `store` mount we created.
 
 ## All done
 
