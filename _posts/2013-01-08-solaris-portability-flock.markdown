@@ -181,6 +181,22 @@ I've put them together below:
 As you can see, they are very similar, making it relatively straight-forward to
 rewrite code to use the more portable `fcntl()`.
 
+## An important note on semantics
+
+There are two important difference between `flock()` and `fcntl()` you need to
+be aware of which may affect a simple conversion:
+
+* `fcntl()` locks are not held across a `fork()`, so you cannot pass locks down
+  to child processes.
+
+* The semantics of `fcntl()` are such that __any__ closure of a file descriptor
+  in your application will release the locks held against that file.  This is
+  best illustrated with a lock on `/etc/passwd` that gets released if you call
+  `getpwname()` as that opens and closes the `/etc/passwd` file.
+
+Generally such semantics do not apply, but you should be aware of them, and it
+always pays to carefully read the manual pages, preferably those from BSD.
+
 ## flock() -> fcntl() cheat sheet
 
 To aid your own conversions, here are some further examples (without error
@@ -273,6 +289,7 @@ least 19 packages in the pkgsrc collection :)
 
 ## Summary
 
-`flock()` is simpler, but at the cost of portability.  Please try to use
-`fcntl()` where possible, it isn't much harder to use, and makes your software
-run on more platforms.
+`flock()` is simpler, and retains locks across `fork()` and concurrent access
+boundaries, but at the cost of portability.  Please try to use `fcntl()` where
+possible, it isn't much harder to use, and makes your software run on more
+platforms.
