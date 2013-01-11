@@ -33,43 +33,16 @@ $margin_postbody:		$margin_global;	// Margin for main post body
 $margin_v:			$margin_global;	// General vertical margin
 
 //
-// Load fonts, saved locally from Google Fonts
-//
-// - Bitter  (http://fonts.googleapis.com/css?family=Bitter:400,700,400italic)
-//
-
-@font-face {
-  font-family: 'Bitter';
-  font-style: italic;
-  font-weight: 400;
-  src: local('Bitter-Italic'), url('http://{{ site.url }}/files/fonts/Bitter-Italic.woff') format('woff');
-}
-@font-face {
-  font-family: 'Bitter';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Bitter-Regular'), url('http://{{ site.url }}/files/fonts/Bitter-Regular.woff') format('woff');
-}
-@font-face {
-  font-family: 'Bitter';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Bitter-Bold'), url('http://{{ site.url }}/files/fonts/Bitter-Bold.woff') format('woff');
-}
-
-//
 // Font and background defaults for <body>
 //
 body {
   background: $color_background;
   color: $color_maintext;
-  font-family: Bitter, Georgia, sans-serif;
-  font-size: 16px;
-  font-weight: 100;
+  font-family: Ubuntu, sans-serif;
+  font-weight: 400;
 }
 code {
-  font-family: monospace;
-  font-size: 12px;
+  font-family: 'Ubuntu Mono', monospace;
 }
 
 //
@@ -134,8 +107,8 @@ hr {
 // the colour of links slightly when hovered.
 //
 #banner {
-  font-family: Verdana, 'DejaVu Sans', sans-serif;
-  font-weight: 100;
+  font-family: Ubuntu, sans-serif;
+  font-weight: 400;
   padding-bottom: 20px;
   text-align: right;
 }
@@ -163,9 +136,9 @@ hr {
 }
 #postinfo {
   color: $color_postinfo;
-  font-family: Verdana, 'DejaVu Sans', sans-serif;
+  font-family: Ubuntu, sans-serif;
   font-size: 12px;
-  font-weight: 100;
+  font-weight: 400;
   padding: 0.2em 0;
 }
 #postinfo a {
@@ -221,7 +194,7 @@ hr {
   width: 100%;
 }
 .posttable th {
-  font-weight: 100;
+  font-weight: 400;
   text-align: center;
 }
 .posttable td {
@@ -231,9 +204,9 @@ hr {
 }
 #postshare {
   color: $color_share;
-  font-family: Verdana, 'DejaVu Sans', sans-serif;
+  font-family: Ubuntu, sans-serif;
   font-size: 12px;
-  font-weight: 100;
+  font-weight: 400;
   padding-bottom: 10px;
   text-align: center;
 }
@@ -278,7 +251,7 @@ ul.posts a:visited {
 .highlight {
   border: 1px solid #aaaaaa;
   overflow: hidden;
-  line-height: 1em;
+  line-height: 1.3em;
   margin: $margin_v $margin_indent;
   width: auto;
 }
