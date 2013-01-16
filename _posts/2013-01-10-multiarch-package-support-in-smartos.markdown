@@ -4,6 +4,8 @@ title: Multi-architecture package support in SmartOS
 tags: [pkgsrc, smartos]
 ---
 
+_\[Updated on 2013-01-16 to use the 12.4.1 dataset which fixes some issues.\]_
+
 Ever since the release of Solaris 7 back in 1998, Solaris has had the ability
 to run both 32-bit and 64-bit binaries on the same machine.  Even now, 15 years
 later, with much of the world 64-bit only, there are still reasons to retain
@@ -45,18 +47,19 @@ running:
 : Fetch the dataset image and manifest files.  The image is 85MB.
 $ mkdir -p /usbkey/images
 $ cd /usbkey/images
-$ curl -O http://pkgsrc.smartos.org/datasets/multiarch-12.4.0.dsmanifest
-$ curl -O http://pkgsrc.smartos.org/datasets/multiarch-12.4.0.zfs.bz2
+$ curl -O http://pkgsrc.smartos.org/datasets/multiarch-12.4.1.dsmanifest
+$ curl -O http://pkgsrc.smartos.org/datasets/multiarch-12.4.1.zfs.bz2
 
 : Import it
-$ imgadm install -m multiarch-12.4.0.dsmanifest -f multiarch-12.4.0.zfs.bz2
+$ imgadm install -m multiarch-12.4.1.dsmanifest -f multiarch-12.4.1.zfs.bz2
 
 : Create a new zone using the dataset (change your json to suit).
 $ vmadm create <<EOF
 {
   "brand": "joyent",
-  "image_uuid": "c7622518-5b36-11e2-bcca-2fdaa594b790",
+  "image_uuid": "ee1fb198-5fe1-11e2-9cce-e319fd47df7b",
   "max_physical_memory": 256,
+  "alias": "multiarch-12.4.1",
   "nics": [
     {
       "nic_tag": "admin",
