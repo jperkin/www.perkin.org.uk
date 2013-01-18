@@ -13,8 +13,11 @@ To satisfy those demands, it should instead be reasonably straight-forward for
 users to build their own packages, and this guide hopefully provides all the
 information for them to do just that.
 
-This is the first in a series of posts, and will focus on getting pkgsrc set
-up in a clean SmartOS zone and then building some packages.
+This is the first in a series of posts, and will focus on getting pkgsrc set up
+in a clean SmartOS zone and then building some packages.  Other posts currently
+available in the series are:
+
+* [How to fix build failures](/posts/pkgsrc-on-smartos-fixing-broken-builds.html)
 
 ## Create a build machine
 
