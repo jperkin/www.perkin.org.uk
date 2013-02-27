@@ -19,7 +19,7 @@ mount from the [global zone](/posts/smartos-and-the-global-zone.html), however
 with the highly flexible SmartOS
 [Zones](http://wiki.smartos.org/display/DOC/Zones) architecture, coupled with
 Joyent employing Zones guru [Jerry
-Jelenik](http://wiki.smartos.org/display/DOC/Jerry+Jelinek), we are able to
+Jelinek](http://wiki.smartos.org/display/DOC/Jerry+Jelinek), we are able to
 provide you with an option to do exactly this.  As Jerry says, at Sun there was
 even a native Linux brand, so pretty much anything is possible!
 
