@@ -25,14 +25,13 @@ For general illumos users or SmartOS users who want access to a full package
 set, the instructions are below:
 
 {% highlight console %}
-$ curl http://pkgsrc.smartos.org/packages/illumos/bootstrap/bootstrap-2013Q1-illumos.tar.gz \
-    | gtar -zxpf - -C /
-$ PATH=/opt/pkg/sbin:/opt/pkg/bin:$PATH
-$ pkgin -y update
-$ pkgin avail | wc -l
+# curl http://pkgsrc.smartos.org/packages/illumos/bootstrap/bootstrap-2013Q1-illumos.tar.gz | gtar -zxpf - -C /
+# PATH=/opt/pkg/sbin:/opt/pkg/bin:$PATH
+# pkgin -y update
+# pkgin avail | wc -l
     9842
-$ pkgin search <package>
-$ pkgin -y install <package> <package...>
+# pkgin search <package>
+# pkgin -y install <package> <package...>
 {% endhighlight %}
 
 ### OSX
@@ -46,14 +45,13 @@ mechanism to ensure that they are portable across OSX releases, and have been
 successfully tested on OSX Lion (10.7).
 
 {% highlight console %}
-$ curl http://pkgsrc.smartos.org/packages/Darwin/bootstrap/bootstrap-2013Q1-Darwin.tar.gz \
-    | gnutar -zxpf - -C /
+$ curl http://pkgsrc.smartos.org/packages/Darwin/bootstrap/bootstrap-2013Q1-Darwin.tar.gz | sudo gnutar -zxpf - -C /
 $ PATH=/usr/pkg/sbin:/usr/pkg/bin:$PATH
-$ pkgin -y update
+$ sudo pkgin -y update
 $ pkgin avail | wc -l
     8108
 $ pkgin search <package>
-$ pkgin -y install <package> <package...>
+$ sudo pkgin -y install <package> <package...>
 {% endhighlight %}
 
 ## What's New
@@ -96,13 +94,13 @@ You simply compile the go source code as you would for any other language that
 GCC supports, for example:
 
 {% highlight console %}
-$ pkgin -y install gcc47
+# pkgin -y install gcc47
 
 : /opt/pkg for the illumos package set, /opt/local for SmartOS datasets..
-$ PATH=/opt/pkg/gcc47/bin:$PATH
+# PATH=/opt/pkg/gcc47/bin:$PATH
 
-$ gccgo app.go -o app
-$ ./app
+# gccgo app.go -o app
+# ./app
 {% endhighlight %}
 
 ### Networking utilities on SmartOS
