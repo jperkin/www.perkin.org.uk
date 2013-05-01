@@ -13,14 +13,14 @@
 
 // Macros
 $color_background: 		#ffffff;
-$color_maintext:   		#222222;
+$color_maintext:   		#111111;
 $color_bannertitle:		#000000;
 $color_bannerlinks:		#444444;
 $color_postinfo:		#444444;
 $color_postinfo_a:		#444444;
 $color_postinfo_a_visited:	#666666;
-$color_postbody_a:		$color_maintext;
-$color_postbody_a_visited:	#666666;
+$color_postbody_a:		#888888;
+$color_postbody_a_visited:	#777777;
 $color_table:			$color_maintext;
 $color_share:			$color_maintext;
 $color_share_a:			$color_maintext;
@@ -159,7 +159,6 @@ hr {
 }
 #postbody a {
   color: $color_postbody_a;
-  text-decoration: underline;
 }
 #postbody a:visited {
   color: $color_postbody_a_visited;
@@ -248,15 +247,25 @@ ul.posts a:visited {
  */
 .highlight {
   border: 1px solid #aaaaaa;
-  overflow: hidden;
+  overflow: auto;
   line-height: 1.15em;
   margin: $margin_v $margin_indent;
   width: auto;
 }
-.highlight:hover {
-  overflow: auto;
+/*
+ * Necessary to maintain a scrollbar on OSX.
+ */
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0,0,0,.5);
+  -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
 }
 .highlight pre {
   margin: 5px;
+  overflow: auto;
   width: auto;
 }
