@@ -30,13 +30,15 @@ $ sudo pkgin -y update
 
 : Find out what packages (and how many) are available
 $ pkgin avail | wc -l
-    8785
 
-: Search for a particular package
+: Search for a particular package, for example 'tmux'
 $ pkgin search tmux
 
 : Install a package
 $ sudo pkgin -y install tmux
+
+: Upgrade all packages
+$ sudo pkgin -y full-upgrade
 {% endhighlight %}
 
 As it is such a common FAQ, note that the `git` package is currently spelt
