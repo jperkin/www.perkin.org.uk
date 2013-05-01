@@ -47,8 +47,8 @@ As it is such a common FAQ, note that the `git` package is currently spelt
 ## Building From Source
 
 pkgsrc is based on the FreeBSD [ports](http://www.freebsd.org/ports/) system,
-so if you are used to that (or similar forks such as MacPorts or OpenBSD ports)
-and want to build from source the procedure is very similar:
+so if you are used to that (or other similar forks such as OpenBSD ports) and
+want to build from source the procedure is very similar:
 
 {% highlight console %}
 : Install the git package and fetch the cvs to git conversion repository
