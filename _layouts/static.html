@@ -6,5 +6,12 @@ layout: default
         <div id="postbody">
           {{ content }}
         </div>
+        <div id="postshare">
+          Share this page on
+          <a href='http://twitter.com/share?url=http://{{ site.url }}{{ page.url }}&amp;text=%22{{ page.title | cgi_escape }}%22+by+%40jperkin'>Twitter</a>,
+          <a href='http://news.ycombinator.com/submitlink?u=http://{{ site.url }}{{ page.url }}&amp;t={{ page.title | cgi_escape }}'>HackerNews</a>,
+          <a href='http://www.facebook.com/sharer/sharer.php?u=http://{{ site.url }}{{ page.url }}&amp;t={{ page.title | cgi_escape}}'>Facebook</a> or
+          <a href='https://plus.google.com/share?url=http://{{ site.url }}{{ page.url }}'>Google+</a>
+        </div>
         <hr />
       </div>
