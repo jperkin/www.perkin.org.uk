@@ -19,7 +19,7 @@ on all modern versions of OSX.
 ## Quick Start
 
 {% highlight console %}
-: Download and install the bootstrap containing pkgin and the packaging tools.
+: Download and install the bootstrap containing pkgin and the packaging tools
 $ curl http://pkgsrc.smartos.org/packages/Darwin/bootstrap/bootstrap-2013Q1-Darwin.tar.gz | sudo gnutar -zxpf - -C /
 
 : Packages are kept under /usr/pkg, add to $PATH
@@ -51,7 +51,7 @@ so if you are used to that (or other similar forks such as OpenBSD ports) and
 want to build from source the procedure is very similar:
 
 {% highlight console %}
-: Install the git package and fetch the cvs to git conversion repository
+: Install the git package and fetch pkgsrc from the converted cvs->git repo
 $ sudo pkgin -y install scmgit
 $ git clone git://github.com/jsonn/pkgsrc.git
 
