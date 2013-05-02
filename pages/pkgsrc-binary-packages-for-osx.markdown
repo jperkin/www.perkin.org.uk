@@ -41,7 +41,7 @@ $ sudo pkgin -y install tmux
 $ sudo pkgin -y full-upgrade
 {% endhighlight %}
 
-As it is such a common FAQ, note that the `git` package is currently spelt
+As it is such a common FAQ, note that the `git` package is currently spelled
 `scmgit`.
 
 ## Building From Source
