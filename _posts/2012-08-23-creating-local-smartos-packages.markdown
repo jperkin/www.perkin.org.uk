@@ -68,7 +68,7 @@ Finally for this part, generate a `packlist` file which simply contains a list
 of files we want packaged, relative to the `files` directory:
 
 {% highlight console %}
-$ (cd files; find * -type f | sort) >packlist
+$ (cd files; find * -type f -or -type l | sort) >packlist
 {% endhighlight %}
 
 The `packlist` file supports many directives which are lines beginning with
