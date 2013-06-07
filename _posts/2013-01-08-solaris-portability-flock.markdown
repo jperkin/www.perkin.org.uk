@@ -9,7 +9,7 @@ software portability when it comes to Solarish (Solaris, illumos, SmartOS etc.)
 systems.  We will begin with `flock()`, as it's what I happen to have been
 fixing today.
 
-The most recent version of [tmux](tmux.sourceforge.net/) fails with the
+The most recent version of [tmux](http://tmux.sourceforge.net/) fails with the
 following errors:
 
 {% highlight text %}
