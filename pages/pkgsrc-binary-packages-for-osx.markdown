@@ -13,8 +13,8 @@ is the `pkgin` package manager which is designed to look and function very
 similar to `apt-get`.
 
 Currently there are nearly 9,000 up-to-date binary packages available.  The
-packages are built on OSX Leopard (10.5) so that they are generic enough to run
-on all modern versions of OSX.
+packages are built on OSX Snow Leopard (10.6) and linked against libraries from
+pkgsrc, so that they are generic enough to run on all modern versions of OSX.
 
 The current release is `pkgsrc-2013Q2`.
 
@@ -29,8 +29,8 @@ $ sudo ed /usr/pkg/etc/pkgin/repositories.conf <<EOF
 %s/2013Q1/2013Q2/g
 wq
 EOF
-$ sudo pkgin update
-$ sudo pkgin full-upgrade
+$ sudo pkgin -y update
+$ sudo pkgin -y full-upgrade
 {% endhighlight %}
 
 Otherwise install a new bootstrap:
