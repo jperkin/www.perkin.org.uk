@@ -16,11 +16,28 @@ Currently there are nearly 9,000 up-to-date binary packages available.  The
 packages are built on OSX Leopard (10.5) so that they are generic enough to run
 on all modern versions of OSX.
 
+The current release is `pkgsrc-2013Q2`.
+
 ## Quick Start
+
+If you have already installed a pkgsrc bootstrap, you should be able to upgrade
+to the latest release simply by updating the `pkgin` URL and upgrading all
+packages:
+
+{% highlight console %}
+$ sudo ed /usr/pkg/etc/pkgin/repositories.conf <<EOF
+%s/2013Q1/2013Q2/g
+wq
+EOF
+$ sudo pkgin update
+$ sudo pkgin full-upgrade
+{% endhighlight %}
+
+Otherwise install a new bootstrap:
 
 {% highlight console %}
 : Download and install the bootstrap containing pkgin and the packaging tools
-$ curl http://pkgsrc.smartos.org/packages/Darwin/bootstrap/bootstrap-2013Q1-Darwin.tar.gz | sudo gnutar -zxpf - -C /
+$ curl http://pkgsrc.smartos.org/packages/Darwin/bootstrap/bootstrap-2013Q2.tar.gz | sudo gnutar -zxpf - -C /
 
 : Packages are kept under /usr/pkg, add to $PATH
 $ PATH=/usr/pkg/sbin:/usr/pkg/bin:$PATH
@@ -57,7 +74,7 @@ $ git clone git://github.com/jsonn/pkgsrc.git
 
 : By default you will get pkgsrc trunk.  If you want the most recent stable
 : branch, then switch to it first.
-$ git checkout pkgsrc_2013Q1
+$ git checkout pkgsrc_2013Q2
 
 : Change to the package directory and download/compile/install with one command.
 $ cd pkgsrc/<category>/<package>
@@ -72,7 +89,7 @@ Here are some common configuration settings you may wish to add to
 SU_CMD=		sudo /bin/sh -c
 
 # Re-use existing binary packages
-BINPKG_SITES=	http://pkgsrc.smartos.org/packages/Darwin/2013Q1/
+BINPKG_SITES=	http://pkgsrc.smartos.org/packages/Darwin/2013Q2/
 DEPENDS_TARGET=	bin-install
 
 # Build everything with -j8
@@ -136,7 +153,7 @@ We hang out on Freenode `#pkgsrc`, and our mailing lists are:
 
 There are over 12,000 packages in pkgsrc, so there are quite a few which
 currently do not build on OSX.  The most recent bulk build report is available
-[here](http://pkgsrc.smartos.org/reports/2013Q1-Darwin/20130418.1026/meta/report.html)
+[here](http://pkgsrc.smartos.org/reports/2013Q2-Darwin/20130715.1420/meta/report.html)
 and shows which packages are failing along with their build logs.
 
 Build fixes, package updates as well as new packages are very welcome:
