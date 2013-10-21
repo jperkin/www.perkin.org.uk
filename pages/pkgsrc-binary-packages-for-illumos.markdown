@@ -66,8 +66,7 @@ $ git clone git://github.com/joyent/pkgsrc.git
 
 : By default you will get pkgsrc trunk.  If you want the most recent stable
 : branch, then switch to it first.
-$ git checkout joyent/release/2013Q2              # for 32-bit/64-bit
-$ git checkout joyent/release/2013Q2_multiarch    # for multiarch
+$ git checkout joyent/release/2013Q3
 
 : Change to the package directory and download/compile/install with one command.
 $ cd pkgsrc/<category>/<package>
@@ -83,7 +82,7 @@ SU_CMD=		sudo /bin/sh -c
 
 # Re-use existing binary packages, replace <ARCH> with the bootstrap you
 # chose earlier, i.e. 'i386', 'x86_64', or 'multiarch'.
-BINPKG_SITES=	http://pkgsrc.joyent.com/packages/SmartOS/2013Q2/<ARCH>
+BINPKG_SITES=	http://pkgsrc.joyent.com/packages/SmartOS/2013Q3/<ARCH>
 DEPENDS_TARGET=	bin-install
 
 # Build everything with -j8
