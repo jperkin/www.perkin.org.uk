@@ -14,24 +14,24 @@ Included in the binary package set is the `pkgin` package manager which is
 designed to look and function very similar to `apt-get`, making it very easy
 to add, upgrade, and remove packages.
 
-Currently there are over 10,000 up-to-date binary packages available, built
+Currently there are over 11,000 up-to-date binary packages available, built
 for individual 32-bit and 64-bit sets, as well as a combined multiarch set.
 
-pkgsrc is released every quarter, and the current release is 2013Q2.
+pkgsrc is released every quarter, and the current release is 2013Q3.
 
 ## Quick Start
 
 {% highlight console %}
 : Install either the 32-bit bootstrap..
-$ curl -s http://pkgsrc.joyent.com/packages/SmartOS/bootstrap/bootstrap-2013Q2-i386.tar.gz \
+$ curl -s http://pkgsrc.joyent.com/packages/SmartOS/bootstrap/bootstrap-2013Q3-i386.tar.gz \
     | gzcat | (cd /; sudo tar -xpf -)
 
 : ..or the 64-bit bootstrap..
-$ curl -s http://pkgsrc.joyent.com/packages/SmartOS/bootstrap/bootstrap-2013Q2-x86_64.tar.gz \
+$ curl -s http://pkgsrc.joyent.com/packages/SmartOS/bootstrap/bootstrap-2013Q3-x86_64.tar.gz \
     | gzcat | (cd /; sudo tar -xpf -)
 
 : ..or the multiarch bootstrap.
-$ curl -s http://pkgsrc.joyent.com/packages/SmartOS/bootstrap/bootstrap-2013Q2-multiarch.tar.gz \
+$ curl -s http://pkgsrc.joyent.com/packages/SmartOS/bootstrap/bootstrap-2013Q3-multiarch.tar.gz \
     | gzcat | (cd /; sudo tar -xpf -)
 
 : Packages are kept under /opt/local, add to $PATH
@@ -53,9 +53,6 @@ $ sudo pkgin -y install tmux
 $ sudo pkgin -y full-upgrade
 {% endhighlight %}
 
-As it is such a common FAQ, note that the `git` package is currently spelled
-`scmgit`.
-
 ## Building From Source
 
 pkgsrc is based on the FreeBSD [ports](http://www.freebsd.org/ports/) system,
@@ -64,7 +61,7 @@ want to build packages from source the procedure is very similar:
 
 {% highlight console %}
 : Install the git package and fetch pkgsrc from the converted cvs->git repo
-$ sudo pkgin -y install scmgit
+$ sudo pkgin -y install git
 $ git clone git://github.com/joyent/pkgsrc.git
 
 : By default you will get pkgsrc trunk.  If you want the most recent stable
@@ -147,7 +144,7 @@ We hang out on Freenode `#pkgsrc`, and our mailing lists are:
 
 ## Get Involved
 
-There are over 12,000 packages in pkgsrc, so there are quite a few which
+There are over 13,000 packages in pkgsrc, so there are quite a few which
 currently do not build on illumos.  We perform regular bulk builds that are
 posted to the [pkgsrc-bulk@netbsd.org](mailto:pkgsrc-bulk@netbsd.org) mailing
 list, which shows all the currently failing packages as well as their build
