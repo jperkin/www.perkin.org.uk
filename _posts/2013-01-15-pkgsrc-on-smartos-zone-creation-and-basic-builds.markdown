@@ -174,10 +174,17 @@ Thus, this is how I would configure `mk.conf`:
 
 {% highlight console %}
 # mkdir -p /content/{distfiles,packages}
+
+: Do not change the existing entries in this file, they tell pkgsrc
+: where to find important files.
 # vi /opt/local/etc/mk.conf
 {% endhighlight %}
 
 {% highlight make %}
+# ...
+# Keep the existing mk.conf entries, they are important.
+# ...
+
 DISTDIR=	/content/distfiles
 PACKAGES=	/content/packages
 WRKOBJDIR=	/var/tmp/pkgsrc-build
