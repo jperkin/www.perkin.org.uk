@@ -197,7 +197,7 @@ corresponds to:
 
 * 0xfffffd7fffdff378 (64-bit)
 * 0xffdff378 (32-bit)
-* 0x0207 (16-bit)
+* 0x0702 (16-bit)
 * 0x41 (8-bit)
 * 0x0d (8-bit)
 
