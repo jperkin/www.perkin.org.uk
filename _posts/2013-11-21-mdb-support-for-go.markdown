@@ -48,7 +48,9 @@ int main(int argc, char *argv[])
 }
 {% endhighlight %}
 
-Compile it with no optimisations to ensure we do not lose any functions to inlining.
+Compile it with no optimisations to ensure we do not lose any functions to
+inlining.  The `-g` isn't strictly necessary for these examples, but is good
+practise nonetheless.
 
 {% highlight bash %}
 $ gcc -O0 -g test.c -o test-c
@@ -180,8 +182,24 @@ From the output we can match up a few things:
   pointer to the string "`%d -> %d`" which we can see using `::dump`.
 
 * The stack contains arguments (`7`, `6`), instruction pointers (`40109c`,
-  `4010cc`) and frame pointers (`fffffd7fffdff330`, `fffffd7fffdff330`) in
-  little-endian format (e.g. `30f3dfff 7ffdffff -> fffffd7fffdff330`).
+  `4010cc`) and frame pointers (`fffffd7fffdff330`, `fffffd7fffdff330`).
+
+If you are wondering where I am getting those addresses from, note that this is
+on x86 which is little-endian, and so you need to read each byte backwards -
+that is, if you have a dump line which contains a 64-bit value, a 32-bit value,
+a 16-bit value and two 8-bit values, then:
+
+{% highlight text %}
+xxxxxxxxxxxxxxxx:  78f3dfff 7ffdffff 78f3dfff 0207410d  ................
+{% endhighlight %}
+
+corresponds to:
+
+* 0xfffffd7fffdff378 (64-bit)
+* 0xffdff378 (32-bit)
+* 0x0207 (16-bit)
+* 0x41 (8-bit)
+* 0x0d (8-bit)
 
 Playing around with MDB like this was super helpful for me to get a visual
 representation of memory, and how functions and arguments are passed around.
