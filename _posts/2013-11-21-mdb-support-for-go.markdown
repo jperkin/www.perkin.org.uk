@@ -253,7 +253,7 @@ programs down to a self-contained binary, which can then be copied around and
 executed.  This may lead you to think that stack traces will simply work, as
 there is no dynamic runtime stuff going on.  Well, let's see.
 
-Let's start with a comparitive program to the one above, written in Go.
+Let's start with a comparative program to the one above, written in Go.
 
 {% highlight go %}
 package main
@@ -415,7 +415,7 @@ MDB module.
 The current version of the MDB module is
 [here](https://github.com/joyent/mdb_go), you may want to follow along there.
 
-We can start by transplating the layouts for the pclntab and Go function
+We can start by transplanting the layouts for the pclntab and Go function
 information.
 
 {% highlight c %}
