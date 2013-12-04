@@ -277,9 +277,12 @@ for (var i = 0; i < 3; i++) {
 }
 
 /*
- * At this point we are ready to read in the first address.  We set the
- * starting address to $1020, though it is somewhat arbitrary, as long as
- * we do not use the special reserved areas of memory (e.g. $FFFE-$FFFF!)
+ * At this point we are ready to read in the first address.  The 6309's RESET
+ * vector is at $FFFE-$FFFF, which is the hardcoded location where it reads
+ * the first address from.
+ *
+ * We provide the starting address of $1020, though it is somewhat arbitrary,
+ * and we could use any address except for $FFF0-$FFFF which is reserved.
  */
 shiftout(0x10); sixclock();	// Load address from $FFFE
 shiftout(0x20); sixclock();	// Load address from $FFFF
