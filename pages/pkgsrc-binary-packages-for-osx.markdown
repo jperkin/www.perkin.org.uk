@@ -12,11 +12,11 @@ on OSX, which you can easily download and install onto your systems.  Included
 is the `pkgin` package manager which is designed to look and function very
 similar to `apt-get`.
 
-Currently there are nearly 9,000 up-to-date binary packages available.  The
+Currently there are over 11,000 up-to-date binary packages available.  The
 packages are built on OSX Snow Leopard (10.6) and linked against libraries from
 pkgsrc, so that they are generic enough to run on all modern versions of OSX.
 
-The current release is `pkgsrc-2013Q2`.
+The current release is `pkgsrc-2014Q2`.
 
 ## Quick Start
 
@@ -25,8 +25,9 @@ to the latest release simply by updating the `pkgin` URL and upgrading all
 packages:
 
 {% highlight console %}
+: Assuming an upgrade from 2014Q1..
 $ sudo ed /usr/pkg/etc/pkgin/repositories.conf <<EOF
-%s/2013Q1/2013Q2/g
+%s/2014Q1/2014Q2/g
 wq
 EOF
 $ sudo pkgin -y update
@@ -37,7 +38,7 @@ Otherwise install a new bootstrap:
 
 {% highlight console %}
 : Download and install the bootstrap containing pkgin and the packaging tools
-$ curl http://pkgsrc.smartos.org/packages/Darwin/bootstrap/bootstrap-2013Q2.tar.gz | sudo gnutar -zxpf - -C /
+$ curl http://pkgsrc.joyent.com/packages/Darwin/bootstrap/bootstrap-2014Q2-i386.tar.gz | sudo tar -zxpf - -C /
 
 : Packages are kept under /usr/pkg, add to $PATH
 $ PATH=/usr/pkg/sbin:/usr/pkg/bin:$PATH
@@ -58,9 +59,6 @@ $ sudo pkgin -y install tmux
 $ sudo pkgin -y full-upgrade
 {% endhighlight %}
 
-As it is such a common FAQ, note that the `git` package is currently spelled
-`scmgit`.
-
 ## Building From Source
 
 pkgsrc is based on the FreeBSD [ports](http://www.freebsd.org/ports/) system,
@@ -74,7 +72,7 @@ $ git clone git://github.com/jsonn/pkgsrc.git
 
 : By default you will get pkgsrc trunk.  If you want the most recent stable
 : branch, then switch to it first.
-$ git checkout pkgsrc_2013Q2
+$ git checkout pkgsrc_2014Q2
 
 : Change to the package directory and download/compile/install with one command.
 $ cd pkgsrc/<category>/<package>
@@ -89,7 +87,7 @@ Here are some common configuration settings you may wish to add to
 SU_CMD=		sudo /bin/sh -c
 
 # Re-use existing binary packages
-BINPKG_SITES=	http://pkgsrc.smartos.org/packages/Darwin/2013Q2/
+BINPKG_SITES=	http://pkgsrc.joyent.com/packages/Darwin/2014Q2/i386
 DEPENDS_TARGET=	bin-install
 
 # Build everything with -j8
@@ -151,9 +149,9 @@ We hang out on Freenode `#pkgsrc`, and our mailing lists are:
 
 ## Get Involved
 
-There are over 12,000 packages in pkgsrc, so there are quite a few which
+There are over 14,000 packages in pkgsrc, so there are quite a few which
 currently do not build on OSX.  The most recent bulk build report is available
-[here](http://pkgsrc.smartos.org/reports/2013Q2-Darwin/20130715.1420/meta/report.html)
+[here](http://us-east.manta.joyent.com/pkgsrc/public/reports/Darwin/2014Q2/i386/20140702.1118/meta/report.html)
 and shows which packages are failing along with their build logs.
 
 Build fixes, package updates as well as new packages are very welcome:

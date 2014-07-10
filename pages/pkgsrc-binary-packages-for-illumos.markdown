@@ -14,24 +14,20 @@ Included in the binary package set is the `pkgin` package manager which is
 designed to look and function very similar to `apt-get`, making it very easy
 to add, upgrade, and remove packages.
 
-Currently there are over 11,000 up-to-date binary packages available, built
-for individual 32-bit and 64-bit sets, as well as a combined multiarch set.
+Currently there are over 12,900 up-to-date binary packages available, built
+for individual 32-bit and 64-bit sets.
 
-pkgsrc is released every quarter, and the current release is 2013Q3.
+pkgsrc is released every quarter, and the current release is 2014Q2.
 
 ## Quick Start
 
 {% highlight console %}
 : Install either the 32-bit bootstrap..
-$ curl -s http://pkgsrc.joyent.com/packages/SmartOS/bootstrap/bootstrap-2013Q3-i386.tar.gz \
+$ curl -s http://pkgsrc.joyent.com/packages/SmartOS/bootstrap/bootstrap-2014Q2-i386.tar.gz \
     | gzcat | (cd /; sudo tar -xpf -)
 
-: ..or the 64-bit bootstrap..
-$ curl -s http://pkgsrc.joyent.com/packages/SmartOS/bootstrap/bootstrap-2013Q3-x86_64.tar.gz \
-    | gzcat | (cd /; sudo tar -xpf -)
-
-: ..or the multiarch bootstrap.
-$ curl -s http://pkgsrc.joyent.com/packages/SmartOS/bootstrap/bootstrap-2013Q3-multiarch.tar.gz \
+: ..or the 64-bit bootstrap.
+$ curl -s http://pkgsrc.joyent.com/packages/SmartOS/bootstrap/bootstrap-2014Q2-x86_64.tar.gz \
     | gzcat | (cd /; sudo tar -xpf -)
 
 : Packages are kept under /opt/local, add to $PATH
@@ -66,7 +62,7 @@ $ git clone git://github.com/joyent/pkgsrc.git
 
 : By default you will get pkgsrc trunk.  If you want the most recent stable
 : branch, then switch to it first.
-$ git checkout joyent/release/2013Q3
+$ git checkout joyent/release/2014Q2
 
 : Change to the package directory and download/compile/install with one command.
 $ cd pkgsrc/<category>/<package>
@@ -82,7 +78,7 @@ SU_CMD=		sudo /bin/sh -c
 
 # Re-use existing binary packages, replace <ARCH> with the bootstrap you
 # chose earlier, i.e. 'i386', 'x86_64', or 'multiarch'.
-BINPKG_SITES=	http://pkgsrc.joyent.com/packages/SmartOS/2013Q3/<ARCH>
+BINPKG_SITES=	http://pkgsrc.joyent.com/packages/SmartOS/2014Q2/<ARCH>
 DEPENDS_TARGET=	bin-install
 
 # Build everything with -j8
