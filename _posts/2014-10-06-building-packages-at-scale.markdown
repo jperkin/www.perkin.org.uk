@@ -691,9 +691,22 @@ minutes being taken off the total runtime.
 
 # Summary
 
-We've gone from building 3,000 packages in 14 days in 2004, to building 14,000
-packages in 4.5 hours in 2014.  We've achieved this through a number of
-efforts:
+The most recent build with all these improvements integrated together is
+[here](http://mail-index.netbsd.org/pkgsrc-bulk/2014/10/01/msg011025.html),
+showing a full from-scratch bulk build taking under 5 hours to build over
+14,000 packages.  We've come a long way since 2004:
+
+|  Date   | Package Builds | Total Build Time (hours) |
+|:-------:|:--------------:|:------------------------:|
+| 2004/05 |          2,938 |                      322 |
+| 2010/05 |          6,849 |                    100.5 |
+| 2012/07 |         10,554 |                    166.5 |
+| 2012/10 |         10,634 |                       48 |
+| 2013/06 |         11,372 |                       18 |
+| 2014/08 |         14,017 |                       12 |
+| 2014/10 |         14,162 |                      4.5 |
+
+We've achieved this through a number of efforts:
 
 * Distributed builds to scale across multiple hosts.
 * Chrooted builds to scale on individual hosts.
