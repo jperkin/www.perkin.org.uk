@@ -19,8 +19,8 @@ $color_bannerlinks:		#444444;
 $color_postinfo:		#444444;
 $color_postinfo_a:		#444444;
 $color_postinfo_a_visited:	#666666;
-$color_postbody_a:		#888888;
-$color_postbody_a_visited:	#777777;
+$color_postbody_a:		#4183c4;
+$color_postbody_a_visited:	#3173b4;
 $color_table:			$color_maintext;
 $color_share:			$color_maintext;
 $color_share_a:			$color_maintext;
@@ -166,6 +166,10 @@ hr {
 #postbody p {
   margin: $margin_v 0;
 }
+#postbody p code {
+  background-color: rgba(0,0,0,0.04);
+  border-radius: 3px;
+}
 #postbody .postimg {
   text-align: center;
   margin: $margin_v $margin_indent;
@@ -200,6 +204,29 @@ hr {
   background: #fafafa;
   border: 1px solid #aaa;
   padding: 5px;
+}
+table {
+  color: $color_table;
+  line-height: 1.5em;
+  table-layout: fixed;
+  width: 100%;
+}
+th {
+  background: #fafafa;
+  border: 1px solid #aaa;
+  padding: 5px;
+  font-weight: bold;
+  text-align: center;
+}
+td {
+  border: 1px solid #aaa;
+  padding: 5px;
+}
+tr:nth-child(even) {
+  background: #fafafa;
+}
+tr:nth-child(odd) {
+  background: #efefef;
 }
 #postshare {
   color: $color_share;
