@@ -240,11 +240,11 @@ an expensive `fork()` implementation this can have quite a detrimental effect
 on performance.
 
 Jörg again was heavily involved in a fix for this, with his work on
-[cwrappers](https://github.com/jsonn/pkgsrc/commit/35c0ef88572d984f4a8c8d287e82d537d13b0546)
-for the 2007 Google Summer of Code, which replaced the shell scripts with C
-implementations.  Despite being 99% complete, the final effort to get it over
-the line and integrated into pkgsrc hadn't been finished, so in September 2014
-I took on the task and the sample package results speak for themselves:
+[cwrappers](https://github.com/jsonn/pkgsrc/commit/35c0ef88572d984f4a8c8d287e82d537d13b0546),
+which replaced the shell scripts with C implementations.  Despite being 99%
+complete, the final effort to get it over the line and integrated into pkgsrc
+hadn't been finished, so in September 2014 I took on the task and the sample
+package results speak for themselves:
 
 |   Package   | Legacy wrappers |   C wrappers  | Speedup |
 |-------------|----------------:|--------------:|:-------:|
@@ -718,7 +718,6 @@ What's next?  There are plenty of areas for further improvements:
 * Building in memory file systems if build size permits.
 * Avoid building multiple copies of libnbcompat during bootstrap.
 
-Many thanks to Jörg for writing pbulk and cwrappers, Google for sponsoring GSoC
-so they could be written, the pkgsrc developers for all their hard work in
-adding and updating packages, and of course Joyent for employing me to work on
-this stuff.
+Many thanks to Jörg for writing pbulk and cwrappers, Google for sponsoring the
+pbulk GSoC , the pkgsrc developers for all their hard work in adding and
+updating packages, and of course Joyent for employing me to work on this stuff.
