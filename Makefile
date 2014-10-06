@@ -2,10 +2,10 @@ all: build publish
 test: build-test publish-test
 
 build:
-	@jekyll --url www.perkin.org.uk
+	@jekyll build
 
 build-test:
-	@jekyll --url www-test.perkin.org.uk
+	@jekyll build --config _config.test.yml
 
 localhost:
 	@jekyll --server
