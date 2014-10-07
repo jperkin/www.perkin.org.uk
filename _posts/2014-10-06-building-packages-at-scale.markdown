@@ -240,7 +240,7 @@ an expensive `fork()` implementation this can have quite a detrimental effect
 on performance.
 
 Jörg again was heavily involved in a fix for this, with his work on
-[cwrappers](https://github.com/jsonn/pkgsrc/commit/35c0ef88572d984f4a8c8d287e82d537d13b0546),
+[cwrappers](http://www.netbsd.org/gallery/presentations/joerg/eurobsdcon2009/wrapper.pdf),
 which replaced the shell scripts with C implementations.  Despite being 99%
 complete, the final effort to get it over the line and integrated into pkgsrc
 hadn't been finished, so in September 2014 I took on the task and the sample
