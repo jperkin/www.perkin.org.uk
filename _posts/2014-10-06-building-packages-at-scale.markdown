@@ -19,7 +19,7 @@ sacrificing quality or consistency.
 To give you an idea of how many packages we build, here are the numbers:
 
 | Branch |   Arch |  Success |  Fail |    Total |
-|--------|-------:|---------:|------:|---------:|
+|:------:|:------:|---------:|------:|---------:|
 | 2012Q4 |   i386 |    2,245 |    20 |    2,265 |
 | 2012Q4 | x86_64 |    2,244 |    18 |    2,262 |
 | 2013Q1 |   i386 |    2,303 |    40 |    2,343 |
