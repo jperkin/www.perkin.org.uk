@@ -407,10 +407,10 @@ install.
 
 From 2014Q4 we have reduced the way that `REQUIRES` are computed.  Previously
 every library that was pulled in was recorded, essentially using the output of
-`ldd`, so for example with the `iftop` package you end up with:
+`ldd`, so for example with the `libpcap` package you end up with:
 
 {% highlight console %}
-$ pkg_info -Q REQUIRES iftop
+$ pkg_info -Q REQUIRES libpcap
 /lib/libavl.so.1
 /lib/libc.so.1
 /lib/libcurses.so.1
@@ -435,8 +435,6 @@ $ pkg_info -Q REQUIRES iftop
 /lib/libxml2.so.2
 /lib/libz.so.1
 /opt/local/gcc47/i386-sun-solaris2.11/lib/./libgcc_s.so.1
-/opt/local/lib/libncurses.so.5
-/opt/local/lib/libpcap.so.0
 /usr/lib/libexacct.so.1
 /usr/lib/libidmap.so.1
 /usr/lib/libpool.so.1
@@ -449,28 +447,21 @@ the `SHT_DYNAMIC` section for each executable.  This results in a much simpler
 and direct list:
 
 {% highlight console %}
-$ pkg_info -Q REQUIRES iftop
+$ pkg_info -Q REQUIRES libpcap
 /lib/libc.so.1
-/lib/libm.so.2
+/lib/libdlpi.so.1
 /lib/libnsl.so.1
 /lib/libsocket.so.1
 /lib/libumem.so.1
-/opt/local/lib/libncurses.so.5
-/opt/local/lib/libpcap.so.0
+/opt/local/gcc47/i486-sun-solaris2.11/lib/./libgcc_s.so.1
 {% endhighlight %}
 
-and increases the portability of our packages across illumos distributions.
+due to excluding all of `/lib/libdlpi.so.1`'s dependencies, and increases the
+portability of our packages across illumos distributions.
 
-In case you are wondering where all the libraries have gone, they were
-previously pulled in via `/opt/local/lib/libpcap.so.0` which has a dependency
-on `/lib/libdlpi.so.1`, which in turn is the library responsible for pulling in
-the large number of extra libraries from `/lib` and `/usr/lib`.
-
-Now that we only mark `/lib/libdlpi.so.1` as our required dependency, the
-distribution is free to manage its internal dependencies.  We also get a side
-benefit of being able to easily identify packages which are incorrectly linking
-against system versions of e.g. `libxml2.so.2` when they should instead be
-using the pkgsrc version.
+We also get a side benefit of being able to easily identify packages which are
+incorrectly linking against system versions of e.g. `libxml2.so.2` when they
+should instead be using the pkgsrc version.
 
 ## Miscellaneous Improvements
 
