@@ -8,7 +8,7 @@ build-test:
 	@jekyll build --config _config.test.yml
 
 localhost:
-	@jekyll --server
+	@jekyll serve
 
 publish: build
 	@# Yes, I'm giving away the path to my site.  No, I don't care.
