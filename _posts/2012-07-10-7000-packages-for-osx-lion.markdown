@@ -4,6 +4,13 @@ title: 7,000 binary packages for OSX Lion
 tags: [osx, pkgin, pkgsrc]
 ---
 
+## Note
+
+__This page is obsolete.__  Please see <http://pkgsrc.joyent.com/> where you
+will find the latest package sets and improved instructions.
+
+## Original Article
+
 For my [day job](http://{{ site.url }}/posts/goodbye-oracle-hello-joyent.html)
 I build packages for our [SmartOS](http://smartos.org/) operating system using
 pkgsrc.  pkgsrc is a cross-platform package manager which began life as the

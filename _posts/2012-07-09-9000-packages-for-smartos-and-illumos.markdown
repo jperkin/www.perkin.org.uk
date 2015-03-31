@@ -4,6 +4,13 @@ title: 9,000 packages for SmartOS and illumos
 tags: [illumos, pkgin, pkgsrc, smartos]
 ---
 
+## Note
+
+__This page is obsolete.__  Please see <http://pkgsrc.joyent.com/> where you
+will find the latest package sets and improved instructions.
+
+## Original Article
+
 At [Joyent](http://www.joyent.com/), we provide [SmartOS](http://smartos.org/)
 users with a set of regularly updated binary packages which are tuned to work
 well on our operating system.  The package manager we use, pkgsrc, does not yet

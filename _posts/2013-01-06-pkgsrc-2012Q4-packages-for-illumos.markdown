@@ -4,6 +4,13 @@ title: pkgsrc-2012Q4 illumos packages now available
 tags: [illumos, pkgin, pkgsrc, smartos]
 ---
 
+## Note
+
+__This page is obsolete.__  Please see <http://pkgsrc.joyent.com/> where you
+will find the latest package sets and improved instructions.
+
+## Original Article
+
 In keeping with the regular quarterly pkgsrc releases, I'm pleased to announce
 that packages from the pkgsrc-2012Q4 branch are now available for general
 illumos platforms.

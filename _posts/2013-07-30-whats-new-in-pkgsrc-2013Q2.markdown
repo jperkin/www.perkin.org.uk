@@ -4,6 +4,13 @@ title: What's new in pkgsrc-2013Q2
 tags: [illumos, osx, pkgsrc, smartos]
 ---
 
+## Note
+
+__This page is obsolete.__  Please see <http://pkgsrc.joyent.com/> where you
+will find the latest package sets and improved instructions.
+
+## Original Article
+
 The latest branch of [pkgsrc](http://www.pkgsrc.org/) was released at the
 beginning of July, and binary packages for SmartOS/illumos and OSX are now
 available.

@@ -3,6 +3,13 @@ layout: static
 title: pkgsrc binary packages for illumos
 ---
 
+## Note
+
+__This page is obsolete.__  Please see <http://pkgsrc.joyent.com/> where you
+will find the latest package sets and improved instructions.
+
+## Original Article
+
 [pkgsrc](http://www.pkgsrc.org/) is a cross-platform packaging framework,
 designed to build a large number of third-party open source software
 packages on many different operating systems.  It is the primary package

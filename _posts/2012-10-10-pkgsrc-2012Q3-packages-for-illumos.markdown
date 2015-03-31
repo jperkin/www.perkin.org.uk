@@ -4,6 +4,13 @@ title: pkgsrc-2012Q3 packages for illumos
 tags: [illumos, pkgin, pkgsrc, smartos]
 ---
 
+## Note
+
+__This page is obsolete.__  Please see <http://pkgsrc.joyent.com/> where you
+will find the latest package sets and improved instructions.
+
+## Original Article
+
 Continuing from my [previous bulk build for
 pkgsrc-2012Q2](/posts/9000-packages-for-smartos-and-illumos.html) I'm pleased
 to announce that packages from the pkgsrc-2012Q3 branch are now available.
