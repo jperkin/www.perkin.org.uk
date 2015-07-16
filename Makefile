@@ -2,13 +2,13 @@ all: build publish
 test: build-test publish-test
 
 build:
-	@jekyll build
+	@jekyll200 build
 
 build-test:
-	@jekyll build --config _config.test.yml
+	@jekyll200 build --config _config.test.yml
 
 localhost:
-	@jekyll serve
+	@jekyll200 serve --no-watch
 
 publish: build
 	@# Yes, I'm giving away the path to my site.  No, I don't care.

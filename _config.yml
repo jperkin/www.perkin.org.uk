@@ -1,7 +1,7 @@
 permalink:  /posts/:title.html
 exclude: [ Makefile, README.md, atom.xml ]
 safe: false
-pygments: true
+highlighter: pygments
 tag_dir: /tags
 tag_title_prefix: "Jonathan Perkin &raquo; "
 tag_title_suffix: ""
