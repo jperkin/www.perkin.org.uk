@@ -1,0 +1,1801 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" width="696" height="418" onload="init(evt)" viewBox="0 0 696 418" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs >
+	<linearGradient id="background" y1="0" y2="1" x1="0" x2="0" >
+		<stop stop-color="#eeeeee" offset="5%" />
+		<stop stop-color="#e0e0ff" offset="95%" />
+	</linearGradient>
+</defs>
+<style type="text/css">
+	.func_g:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+</style>
+<script type="text/ecmascript">
+<![CDATA[
+	var details, svg;
+	function init(evt) { 
+		details = document.getElementById("details").firstChild; 
+		svg = document.getElementsByTagName("svg")[0];
+	}
+	function s(info) { details.nodeValue = "Function: " + info; }
+	function c() { details.nodeValue = ' '; }
+	function find_child(parent, name, attr) {
+		var children = parent.childNodes;
+		for (var i=0; i<children.length;i++) {
+			if (children[i].tagName == name)
+				return (attr != undefined) ? children[i].attributes[attr].value : children[i];
+		}
+		return;
+	}
+	function orig_save(e, attr, val) {
+		if (e.attributes["_orig_"+attr] != undefined) return;
+		if (e.attributes[attr] == undefined) return;
+		if (val == undefined) val = e.attributes[attr].value;
+		e.setAttribute("_orig_"+attr, val);
+	}
+	function orig_load(e, attr) {
+		if (e.attributes["_orig_"+attr] == undefined) return;
+		e.attributes[attr].value = e.attributes["_orig_"+attr].value;
+		e.removeAttribute("_orig_"+attr);
+	}
+	function update_text(e) {
+		var r = find_child(e, "rect");
+		var t = find_child(e, "text");
+		var w = parseFloat(r.attributes["width"].value) -3;
+		var txt = find_child(e, "title").textContent.replace(/\([^(]*\)/,"");
+		t.attributes["x"].value = parseFloat(r.attributes["x"].value) +3;
+		
+		// Smaller than this size won't fit anything
+		if (w < 2*12*0.59) {
+			t.textContent = "";
+			return;
+		}
+		
+		t.textContent = txt;
+		// Fit in full text width
+		if (/^ *$/.test(txt) || t.getSubStringLength(0, txt.length) < w)
+			return;
+		
+		for (var x=txt.length-2; x>0; x--) {
+			if (t.getSubStringLength(0, x+2) <= w) { 
+				t.textContent = txt.substring(0,x) + "..";
+				return;
+			}
+		}
+		t.textContent = "";
+	}
+	function zoom_reset(e) {
+		if (e.attributes != undefined) {
+			orig_load(e, "x");
+			orig_load(e, "width");
+		}
+		if (e.childNodes == undefined) return;
+		for(var i=0, c=e.childNodes; i<c.length; i++) {
+			zoom_reset(c[i]);
+		}
+	}
+	function zoom_child(e, x, ratio) {
+		if (e.attributes != undefined) {
+			if (e.attributes["x"] != undefined) {
+				orig_save(e, "x");
+				e.attributes["x"].value = (parseFloat(e.attributes["x"].value) - x - 10) * ratio + 10;
+				if(e.tagName == "text") e.attributes["x"].value = find_child(e.parentNode, "rect", "x") + 3;
+			}
+			if (e.attributes["width"] != undefined) {
+				orig_save(e, "width");
+				e.attributes["width"].value = parseFloat(e.attributes["width"].value) * ratio;
+			}
+		}
+		
+		if (e.childNodes == undefined) return;
+		for(var i=0, c=e.childNodes; i<c.length; i++) {
+			zoom_child(c[i], x-10, ratio);
+		}
+	}
+	function zoom_parent(e) {
+		if (e.attributes) {
+			if (e.attributes["x"] != undefined) {
+				orig_save(e, "x");
+				e.attributes["x"].value = 10;
+			}
+			if (e.attributes["width"] != undefined) {
+				orig_save(e, "width");
+				e.attributes["width"].value = parseInt(svg.width.baseVal.value) - (10*2);
+			}
+		}
+		if (e.childNodes == undefined) return;
+		for(var i=0, c=e.childNodes; i<c.length; i++) {
+			zoom_parent(c[i]);
+		}
+	}
+	function zoom(node) { 
+		var attr = find_child(node, "rect").attributes;
+		var width = parseFloat(attr["width"].value);
+		var xmin = parseFloat(attr["x"].value);
+		var xmax = parseFloat(xmin + width);
+		var ymin = parseFloat(attr["y"].value);
+		var ratio = (svg.width.baseVal.value - 2*10) / width;
+		
+		// XXX: Workaround for JavaScript float issues (fix me)
+		var fudge = 0.0001;
+		
+		var unzoombtn = document.getElementById("unzoom");
+		unzoombtn.style["opacity"] = "1.0";
+		
+		var el = document.getElementsByTagName("g");
+		for(var i=0;i<el.length;i++){
+			var e = el[i];
+			var a = find_child(e, "rect").attributes;
+			var ex = parseFloat(a["x"].value);
+			var ew = parseFloat(a["width"].value);
+			// Is it an ancestor
+			if (0 == 0) {
+				var upstack = parseFloat(a["y"].value) > ymin;
+			} else {
+				var upstack = parseFloat(a["y"].value) < ymin;
+			}
+			if (upstack) {
+				// Direct ancestor
+				if (ex <= xmin && (ex+ew+fudge) >= xmax) {
+					e.style["opacity"] = "0.5";
+					zoom_parent(e);
+					e.onclick = function(e){unzoom(); zoom(this);};
+					update_text(e);
+				}
+				// not in current path
+				else
+					e.style["display"] = "none";
+			}
+			// Children maybe
+			else {
+				// no common path
+				if (ex < xmin || ex + fudge >= xmax) {
+					e.style["display"] = "none";
+				}
+				else {
+					zoom_child(e, xmin, ratio);
+					e.onclick = function(e){zoom(this);};
+					update_text(e);
+				}
+			}
+		}
+	}
+	function unzoom() {
+		var unzoombtn = document.getElementById("unzoom");
+		unzoombtn.style["opacity"] = "0.0";
+		
+		var el = document.getElementsByTagName("g");
+		for(i=0;i<el.length;i++) {
+			el[i].style["display"] = "block";
+			el[i].style["opacity"] = "1";
+			zoom_reset(el[i]);
+			update_text(el[i]);
+		}
+	}	
+]]>
+</script>
+<rect x="0.0" y="0" width="696.0" height="418.0" fill="url(#background)"  />
+<text text-anchor="middle" x="348.00" y="24" font-size="17" font-family="Verdana" fill="rgb(0,0,0)"  >"pkgin update" heap expansion - streaming</text>
+<text text-anchor="" x="10.00" y="401" font-size="12" font-family="Verdana" fill="rgb(0,0,0)" id="details" > </text>
+<text text-anchor="" x="10.00" y="24" font-size="12" font-family="Verdana" fill="rgb(0,0,0)" id="unzoom" onclick="unzoom()" style="opacity:0.0;cursor:pointer" >Reset Zoom</text>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="81" width="230.0" height="15.0" fill="rgb(0,238,139)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`vmem_xalloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="512.0" y="65" width="1.5" height="15.0" fill="rgb(0,230,194)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1FetchStage2 (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1FetchStage2 (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="273" width="255.9" height="15.0" fill="rgb(0,237,103)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`pcache1FetchSt..</text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="49" width="230.0" height="15.0" fill="rgb(0,208,116)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libc.so.1`_brk_unlocked</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`btreeGetPage (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`btreeGetPage (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="321" width="230.0" height="15.0" fill="rgb(0,196,180)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`btreeGetPage</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="549.7" y="129" width="1.4" height="15.0" fill="rgb(0,236,75)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="273" width="15.9" height="15.0" fill="rgb(0,207,135)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (3,600,384 bytes, 11.75%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (3,600,384 bytes, 11.75%)</title><rect x="554.0" y="161" width="79.5" height="15.0" fill="rgb(0,233,127)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.s..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)</title><rect x="552.6" y="241" width="1.4" height="15.0" fill="rgb(0,204,117)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)</title><rect x="549.7" y="177" width="1.4" height="15.0" fill="rgb(0,216,189)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="321" width="1.4" height="15.0" fill="rgb(0,200,90)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`allocateBtreePage (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`allocateBtreePage (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="337" width="255.9" height="15.0" fill="rgb(0,212,195)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`allocateBtreeP..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (73,728 bytes, 0.24%)</title><rect x="634.9" y="241" width="1.7" height="15.0" fill="rgb(0,219,180)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="65" width="15.9" height="15.0" fill="rgb(0,228,155)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="193" width="7.2" height="15.0" fill="rgb(0,194,42)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="549.7" y="161" width="1.4" height="15.0" fill="rgb(0,204,62)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="681.6" y="65" width="1.4" height="15.0" fill="rgb(0,219,184)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="97" width="1.5" height="15.0" fill="rgb(0,219,76)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="542.5" y="97" width="1.4" height="15.0" fill="rgb(0,220,191)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1ResizeHash (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1ResizeHash (135,168 bytes, 0.44%)</title><rect x="536.6" y="225" width="3.0" height="15.0" fill="rgb(0,235,19)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)</title><rect x="541.0" y="161" width="1.5" height="15.0" fill="rgb(0,208,100)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="633.5" y="81" width="1.4" height="15.0" fill="rgb(0,237,166)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="145" width="255.9" height="15.0" fill="rgb(0,198,82)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`umem_slab_create</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (139,264 bytes, 0.45%)</title><rect x="10.0" y="65" width="3.1" height="15.0" fill="rgb(0,215,141)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="225" width="15.9" height="15.0" fill="rgb(0,217,130)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (73,728 bytes, 0.24%)</title><rect x="634.9" y="129" width="1.7" height="15.0" fill="rgb(0,229,84)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (73,728 bytes, 0.24%)</title><rect x="634.9" y="257" width="1.7" height="15.0" fill="rgb(0,233,31)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libarchive.so.13.1.2`archive_read_open1 (3,739,648 bytes, 12.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libarchive.so.13.1.2`archive_read_open1 (3,739,648 bytes, 12.21%)</title><rect x="554.0" y="289" width="82.6" height="15.0" fill="rgb(0,230,79)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libarchiv..</text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="512.0" y="49" width="1.5" height="15.0" fill="rgb(0,234,61)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3PagerAcquire (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3PagerAcquire (139,264 bytes, 0.45%)</title><rect x="10.0" y="321" width="3.1" height="15.0" fill="rgb(0,223,68)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="257" width="13.0" height="15.0" fill="rgb(0,205,82)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="353" width="7.2" height="15.0" fill="rgb(0,219,45)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="97" width="255.9" height="15.0" fill="rgb(0,239,184)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`vmem_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`allocateBtreePage (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`allocateBtreePage (139,264 bytes, 0.45%)</title><rect x="10.0" y="353" width="3.1" height="15.0" fill="rgb(0,194,53)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="541.0" y="65" width="1.5" height="15.0" fill="rgb(0,191,137)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (327,680 bytes, 1.07%)</title><rect x="513.5" y="257" width="7.2" height="15.0" fill="rgb(0,238,152)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (139,264 bytes, 0.45%)</title><rect x="10.0" y="97" width="3.1" height="15.0" fill="rgb(0,221,207)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)</title><rect x="551.1" y="193" width="1.5" height="15.0" fill="rgb(0,222,199)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (135,168 bytes, 0.44%)</title><rect x="683.0" y="209" width="3.0" height="15.0" fill="rgb(0,236,88)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="161" width="13.0" height="15.0" fill="rgb(0,227,82)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="65" width="7.2" height="15.0" fill="rgb(0,222,74)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="113" width="1.4" height="15.0" fill="rgb(0,221,88)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`btreeGetPage (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`btreeGetPage (135,168 bytes, 0.44%)</title><rect x="536.6" y="289" width="3.0" height="15.0" fill="rgb(0,224,108)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`balance_nonroot (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`balance_nonroot (65,536 bytes, 0.21%)</title><rect x="539.6" y="273" width="1.4" height="15.0" fill="rgb(0,207,157)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="551.1" y="129" width="1.5" height="15.0" fill="rgb(0,220,91)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="161" width="1.4" height="15.0" fill="rgb(0,234,81)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="129" width="15.9" height="15.0" fill="rgb(0,195,128)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="512.0" y="129" width="1.5" height="15.0" fill="rgb(0,214,118)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)</title><rect x="549.7" y="257" width="1.4" height="15.0" fill="rgb(0,208,101)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3BtreeInsert (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3BtreeInsert (131,072 bytes, 0.43%)</title><rect x="539.6" y="305" width="2.9" height="15.0" fill="rgb(0,229,72)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="113" width="1.5" height="15.0" fill="rgb(0,222,78)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="552.6" y="177" width="1.4" height="15.0" fill="rgb(0,221,191)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3InitOne (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3InitOne (65,536 bytes, 0.21%)</title><rect x="512.0" y="353" width="1.5" height="15.0" fill="rgb(0,238,4)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="289" width="13.0" height="15.0" fill="rgb(0,228,62)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (65,536 bytes, 0.21%)</title><rect x="633.5" y="209" width="1.4" height="15.0" fill="rgb(0,239,112)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (135,168 bytes, 0.44%)</title><rect x="683.0" y="177" width="3.0" height="15.0" fill="rgb(0,195,153)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="542.5" y="81" width="1.4" height="15.0" fill="rgb(0,211,195)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="65" width="230.0" height="15.0" fill="rgb(0,204,61)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`vmem_sbrk_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="542.5" y="113" width="1.4" height="15.0" fill="rgb(0,230,79)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)</title><rect x="681.6" y="177" width="1.4" height="15.0" fill="rgb(0,197,43)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="273" width="13.0" height="15.0" fill="rgb(0,225,185)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="542.5" y="65" width="1.4" height="15.0" fill="rgb(0,195,72)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="541.0" y="129" width="1.5" height="15.0" fill="rgb(0,237,9)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="551.1" y="161" width="1.5" height="15.0" fill="rgb(0,233,36)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="177" width="230.0" height="15.0" fill="rgb(0,205,167)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`umem_cache_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="81" width="7.2" height="15.0" fill="rgb(0,231,77)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`upgrade_database (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`upgrade_database (135,168 bytes, 0.44%)</title><rect x="683.0" y="321" width="3.0" height="15.0" fill="rgb(0,218,160)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (3,600,384 bytes, 11.75%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (3,600,384 bytes, 11.75%)</title><rect x="554.0" y="113" width="79.5" height="15.0" fill="rgb(0,221,10)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.s..</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)</title><rect x="549.7" y="273" width="1.4" height="15.0" fill="rgb(0,237,164)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (2,039,808 bytes, 6.66%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (2,039,808 bytes, 6.66%)</title><rect x="636.6" y="225" width="45.0" height="15.0" fill="rgb(0,231,183)" rx="2" ry="2" />
+<text text-anchor="" x="639.56" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libu..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="552.6" y="193" width="1.4" height="15.0" fill="rgb(0,197,20)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="129" width="230.0" height="15.0" fill="rgb(0,222,88)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`vmem_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="539.6" y="49" width="1.4" height="15.0" fill="rgb(0,211,18)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('processing remote summary (http://localhost/)... (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>processing remote summary (http://localhost/)... (65,536 bytes, 0.21%)</title><rect x="681.6" y="49" width="1.4" height="15.0" fill="rgb(0,227,21)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (73,728 bytes, 0.24%)</title><rect x="634.9" y="97" width="1.7" height="15.0" fill="rgb(0,206,94)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (65,536 bytes, 0.21%)</title><rect x="551.1" y="241" width="1.5" height="15.0" fill="rgb(0,205,205)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="633.5" y="49" width="1.4" height="15.0" fill="rgb(0,213,132)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)</title><rect x="512.0" y="161" width="1.5" height="15.0" fill="rgb(0,214,105)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="289" width="7.2" height="15.0" fill="rgb(0,204,50)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="337" width="7.2" height="15.0" fill="rgb(0,231,188)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`balance (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`balance (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="353" width="255.9" height="15.0" fill="rgb(0,205,8)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`balance</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3VdbeExec (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3VdbeExec (131,072 bytes, 0.43%)</title><rect x="539.6" y="321" width="2.9" height="15.0" fill="rgb(0,203,113)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="541.0" y="81" width="1.5" height="15.0" fill="rgb(0,201,115)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)</title><rect x="551.1" y="257" width="1.5" height="15.0" fill="rgb(0,231,159)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="551.1" y="113" width="1.5" height="15.0" fill="rgb(0,211,22)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pager_write (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pager_write (65,536 bytes, 0.21%)</title><rect x="541.0" y="273" width="1.5" height="15.0" fill="rgb(0,191,196)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)</title><rect x="512.0" y="177" width="1.5" height="15.0" fill="rgb(0,222,63)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="549.7" y="145" width="1.4" height="15.0" fill="rgb(0,207,142)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="209" width="255.9" height="15.0" fill="rgb(0,222,117)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`umem_malloc</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`btreeGetPage (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`btreeGetPage (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="321" width="255.9" height="15.0" fill="rgb(0,237,101)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`btreeGetPage</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="225" width="1.4" height="15.0" fill="rgb(0,209,68)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (135,168 bytes, 0.44%)</title><rect x="683.0" y="193" width="3.0" height="15.0" fill="rgb(0,231,13)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_update (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_update (65,536 bytes, 0.21%)</title><rect x="545.4" y="241" width="1.4" height="15.0" fill="rgb(0,190,107)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('download ended. (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>download ended. (65,536 bytes, 0.21%)</title><rect x="681.6" y="33" width="1.4" height="15.0" fill="rgb(0,203,70)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="43.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)</title><rect x="681.6" y="161" width="1.4" height="15.0" fill="rgb(0,218,167)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="257" width="15.9" height="15.0" fill="rgb(0,205,62)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (3,600,384 bytes, 11.75%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (3,600,384 bytes, 11.75%)</title><rect x="554.0" y="97" width="79.5" height="15.0" fill="rgb(0,230,115)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.s..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (65,536 bytes, 0.21%)</title><rect x="633.5" y="193" width="1.4" height="15.0" fill="rgb(0,229,51)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="552.6" y="225" width="1.4" height="15.0" fill="rgb(0,202,93)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('all (30,633,984 bytes, 100%)')" onmouseout="c()" onclick="zoom(this)">
+<title>all (30,633,984 bytes, 100%)</title><rect x="10.0" y="369" width="676.0" height="15.0" fill="rgb(0,238,108)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="379.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (135,168 bytes, 0.44%)</title><rect x="536.6" y="81" width="3.0" height="15.0" fill="rgb(0,219,206)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="546.8" y="129" width="1.5" height="15.0" fill="rgb(0,229,161)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="546.8" y="113" width="1.5" height="15.0" fill="rgb(0,229,70)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="209" width="230.0" height="15.0" fill="rgb(0,229,95)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`umem_malloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="681.6" y="97" width="1.4" height="15.0" fill="rgb(0,192,176)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)</title><rect x="542.5" y="161" width="1.4" height="15.0" fill="rgb(0,239,24)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="551.1" y="145" width="1.5" height="15.0" fill="rgb(0,223,37)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (73,728 bytes, 0.24%)</title><rect x="634.9" y="177" width="1.7" height="15.0" fill="rgb(0,193,55)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="337" width="1.4" height="15.0" fill="rgb(0,239,35)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="681.6" y="113" width="1.4" height="15.0" fill="rgb(0,194,110)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="97" width="1.4" height="15.0" fill="rgb(0,228,67)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (65,536 bytes, 0.21%)</title><rect x="681.6" y="225" width="1.4" height="15.0" fill="rgb(0,227,118)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (73,728 bytes, 0.24%)</title><rect x="634.9" y="113" width="1.7" height="15.0" fill="rgb(0,210,134)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)</title><rect x="549.7" y="193" width="1.4" height="15.0" fill="rgb(0,200,132)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="552.6" y="161" width="1.4" height="15.0" fill="rgb(0,221,54)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`setupLookaside.part.220 (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`setupLookaside.part.220 (65,536 bytes, 0.21%)</title><rect x="549.7" y="289" width="1.4" height="15.0" fill="rgb(0,198,106)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="546.8" y="81" width="1.5" height="15.0" fill="rgb(0,195,6)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libarchive.so.13.1.2`bzip2_reader_bid (3,665,920 bytes, 11.97%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libarchive.so.13.1.2`bzip2_reader_bid (3,665,920 bytes, 11.97%)</title><rect x="554.0" y="273" width="80.9" height="15.0" fill="rgb(0,230,85)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libarchiv..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_populate (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_populate (327,680 bytes, 1.07%)</title><rect x="513.5" y="177" width="7.2" height="15.0" fill="rgb(0,237,178)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3BtreeInsert (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3BtreeInsert (135,168 bytes, 0.44%)</title><rect x="536.6" y="337" width="3.0" height="15.0" fill="rgb(0,209,144)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="541.0" y="97" width="1.5" height="15.0" fill="rgb(0,209,125)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`_start (6,307,840 bytes, 20.59%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`_start (6,307,840 bytes, 20.59%)</title><rect x="546.8" y="353" width="139.2" height="15.0" fill="rgb(0,221,188)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >pkgin-streamsum`_..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="177" width="255.9" height="15.0" fill="rgb(0,195,192)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`umem_cache_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="161" width="15.9" height="15.0" fill="rgb(0,207,88)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="129" width="7.2" height="15.0" fill="rgb(0,220,154)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (2,039,808 bytes, 6.66%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (2,039,808 bytes, 6.66%)</title><rect x="636.6" y="193" width="45.0" height="15.0" fill="rgb(0,204,133)" rx="2" ry="2" />
+<text text-anchor="" x="639.56" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libu..</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3ScratchMalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3ScratchMalloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="257" width="1.4" height="15.0" fill="rgb(0,214,137)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="552.6" y="209" width="1.4" height="15.0" fill="rgb(0,205,57)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="209" width="13.0" height="15.0" fill="rgb(0,217,51)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="225" width="230.0" height="15.0" fill="rgb(0,195,19)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`sqlite3Mem..</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1FetchStage2 (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1FetchStage2 (720,896 bytes, 2.35%)</title><rect x="520.7" y="321" width="15.9" height="15.0" fill="rgb(0,198,136)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="321" width="7.2" height="15.0" fill="rgb(0,223,185)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)</title><rect x="633.5" y="145" width="1.4" height="15.0" fill="rgb(0,223,148)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="65" width="1.4" height="15.0" fill="rgb(0,230,76)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (131,072 bytes, 0.43%)</title><rect x="546.8" y="257" width="2.9" height="15.0" fill="rgb(0,219,121)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="546.8" y="97" width="1.5" height="15.0" fill="rgb(0,197,55)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (135,168 bytes, 0.44%)</title><rect x="536.6" y="193" width="3.0" height="15.0" fill="rgb(0,207,71)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="289" width="15.9" height="15.0" fill="rgb(0,224,171)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3BtreeInsert (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3BtreeInsert (65,536 bytes, 0.21%)</title><rect x="542.5" y="321" width="1.4" height="15.0" fill="rgb(0,206,198)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="337" width="1.5" height="15.0" fill="rgb(0,191,48)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="546.8" y="145" width="1.5" height="15.0" fill="rgb(0,200,116)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_populate (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_populate (65,536 bytes, 0.21%)</title><rect x="543.9" y="177" width="1.5" height="15.0" fill="rgb(0,219,150)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (73,728 bytes, 0.24%)</title><rect x="634.9" y="193" width="1.7" height="15.0" fill="rgb(0,202,182)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_populate (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_populate (65,536 bytes, 0.21%)</title><rect x="545.4" y="177" width="1.4" height="15.0" fill="rgb(0,219,168)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="225" width="7.2" height="15.0" fill="rgb(0,205,108)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (65,536 bytes, 0.21%)</title><rect x="542.5" y="193" width="1.4" height="15.0" fill="rgb(0,207,184)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="241" width="1.5" height="15.0" fill="rgb(0,193,46)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libbz2.so.0.0.0`BZ2_bzDecompressInit (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libbz2.so.0.0.0`BZ2_bzDecompressInit (65,536 bytes, 0.21%)</title><rect x="633.5" y="225" width="1.4" height="15.0" fill="rgb(0,206,155)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (65,536 bytes, 0.21%)</title><rect x="542.5" y="209" width="1.4" height="15.0" fill="rgb(0,232,42)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="193" width="255.9" height="15.0" fill="rgb(0,198,137)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`umem_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)</title><rect x="542.5" y="241" width="1.4" height="15.0" fill="rgb(0,211,26)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="81" width="1.4" height="15.0" fill="rgb(0,217,130)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (139,264 bytes, 0.45%)</title><rect x="10.0" y="113" width="3.1" height="15.0" fill="rgb(0,196,14)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_init (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_init (131,072 bytes, 0.43%)</title><rect x="546.8" y="193" width="2.9" height="15.0" fill="rgb(0,232,191)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="97" width="230.0" height="15.0" fill="rgb(0,236,174)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`vmem_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="129" width="1.4" height="15.0" fill="rgb(0,237,25)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3VdbeMemGrow (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3VdbeMemGrow (65,536 bytes, 0.21%)</title><rect x="512.0" y="273" width="1.5" height="15.0" fill="rgb(0,221,122)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (65,536 bytes, 0.21%)</title><rect x="681.6" y="209" width="1.4" height="15.0" fill="rgb(0,209,27)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)</title><rect x="512.0" y="145" width="1.5" height="15.0" fill="rgb(0,199,134)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="97" width="1.4" height="15.0" fill="rgb(0,231,87)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (65,536 bytes, 0.21%)</title><rect x="541.0" y="193" width="1.5" height="15.0" fill="rgb(0,195,175)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="681.6" y="129" width="1.4" height="15.0" fill="rgb(0,191,66)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (589,824 bytes, 1.93%)</title><rect x="499.0" y="49" width="13.0" height="15.0" fill="rgb(0,216,192)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3_step (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3_step (65,536 bytes, 0.21%)</title><rect x="512.0" y="321" width="1.5" height="15.0" fill="rgb(0,224,116)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)</title><rect x="549.7" y="209" width="1.4" height="15.0" fill="rgb(0,226,66)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_ndoprnt (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_ndoprnt (135,168 bytes, 0.44%)</title><rect x="683.0" y="273" width="3.0" height="15.0" fill="rgb(0,229,129)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (327,680 bytes, 1.07%)</title><rect x="513.5" y="49" width="7.2" height="15.0" fill="rgb(0,228,30)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="548.3" y="81" width="1.4" height="15.0" fill="rgb(0,198,41)" rx="2" ry="2" />
+<text text-anchor="" x="551.25" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (135,168 bytes, 0.44%)</title><rect x="683.0" y="241" width="3.0" height="15.0" fill="rgb(0,219,16)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (139,264 bytes, 0.45%)</title><rect x="10.0" y="81" width="3.1" height="15.0" fill="rgb(0,194,197)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="289" width="1.5" height="15.0" fill="rgb(0,192,102)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)</title><rect x="539.6" y="145" width="1.4" height="15.0" fill="rgb(0,202,190)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="129" width="1.4" height="15.0" fill="rgb(0,223,70)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="633.5" y="113" width="1.4" height="15.0" fill="rgb(0,226,69)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (135,168 bytes, 0.44%)</title><rect x="536.6" y="65" width="3.0" height="15.0" fill="rgb(0,212,194)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="633.5" y="65" width="1.4" height="15.0" fill="rgb(0,190,92)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="542.5" y="129" width="1.4" height="15.0" fill="rgb(0,235,193)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="543.9" y="49" width="1.5" height="15.0" fill="rgb(0,208,74)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`openDatabase (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`openDatabase (131,072 bytes, 0.43%)</title><rect x="549.7" y="305" width="2.9" height="15.0" fill="rgb(0,204,197)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`pkgindb_init (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`pkgindb_init (131,072 bytes, 0.43%)</title><rect x="549.7" y="321" width="2.9" height="15.0" fill="rgb(0,197,178)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (139,264 bytes, 0.45%)</title><rect x="10.0" y="177" width="3.1" height="15.0" fill="rgb(0,212,161)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc_retry (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc_retry (131,072 bytes, 0.43%)</title><rect x="546.8" y="225" width="2.9" height="15.0" fill="rgb(0,203,82)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1FetchStage2 (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1FetchStage2 (589,824 bytes, 1.93%)</title><rect x="499.0" y="353" width="13.0" height="15.0" fill="rgb(0,217,112)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (139,264 bytes, 0.45%)</title><rect x="10.0" y="49" width="3.1" height="15.0" fill="rgb(0,197,43)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1Alloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1Alloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="337" width="13.0" height="15.0" fill="rgb(0,194,17)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (3,600,384 bytes, 11.75%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (3,600,384 bytes, 11.75%)</title><rect x="554.0" y="81" width="79.5" height="15.0" fill="rgb(0,231,113)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libc.so.1..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="145" width="7.2" height="15.0" fill="rgb(0,217,151)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="273" width="7.2" height="15.0" fill="rgb(0,231,60)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (65,536 bytes, 0.21%)</title><rect x="552.6" y="305" width="1.4" height="15.0" fill="rgb(0,214,110)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`fetch_summary (5,779,456 bytes, 18.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`fetch_summary (5,779,456 bytes, 18.87%)</title><rect x="554.0" y="305" width="127.6" height="15.0" fill="rgb(0,237,107)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >pkgin-streamsum`..</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)</title><rect x="541.0" y="225" width="1.5" height="15.0" fill="rgb(0,235,13)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="193" width="1.4" height="15.0" fill="rgb(0,210,7)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3PagerAcquire (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3PagerAcquire (720,896 bytes, 2.35%)</title><rect x="520.7" y="353" width="15.9" height="15.0" fill="rgb(0,232,194)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`balance_nonroot (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`balance_nonroot (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="353" width="230.0" height="15.0" fill="rgb(0,219,91)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`balance_no..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="113" width="15.9" height="15.0" fill="rgb(0,205,146)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="65" width="1.5" height="15.0" fill="rgb(0,239,68)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (73,728 bytes, 0.24%)</title><rect x="634.9" y="161" width="1.7" height="15.0" fill="rgb(0,202,150)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="113" width="1.4" height="15.0" fill="rgb(0,201,1)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="113" width="230.0" height="15.0" fill="rgb(0,190,67)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`vmem_xalloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)</title><rect x="551.1" y="209" width="1.5" height="15.0" fill="rgb(0,218,72)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (139,264 bytes, 0.45%)</title><rect x="10.0" y="145" width="3.1" height="15.0" fill="rgb(0,210,71)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (135,168 bytes, 0.44%)</title><rect x="536.6" y="161" width="3.0" height="15.0" fill="rgb(0,214,19)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3VdbeExec (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3VdbeExec (65,536 bytes, 0.21%)</title><rect x="512.0" y="305" width="1.5" height="15.0" fill="rgb(0,231,40)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="177" width="1.4" height="15.0" fill="rgb(0,234,90)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (2,039,808 bytes, 6.66%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (2,039,808 bytes, 6.66%)</title><rect x="636.6" y="257" width="45.0" height="15.0" fill="rgb(0,225,144)" rx="2" ry="2" />
+<text text-anchor="" x="639.56" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libu..</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`btreeGetPage (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`btreeGetPage (139,264 bytes, 0.45%)</title><rect x="10.0" y="337" width="3.1" height="15.0" fill="rgb(0,205,55)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (65,536 bytes, 0.21%)</title><rect x="541.0" y="209" width="1.5" height="15.0" fill="rgb(0,194,155)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pager_write (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pager_write (65,536 bytes, 0.21%)</title><rect x="542.5" y="273" width="1.4" height="15.0" fill="rgb(0,213,82)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="97" width="15.9" height="15.0" fill="rgb(0,201,161)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1FetchStage2 (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1FetchStage2 (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="273" width="230.0" height="15.0" fill="rgb(0,224,183)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`pcache1Fet..</text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`get_pkg_dbdir (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`get_pkg_dbdir (131,072 bytes, 0.43%)</title><rect x="546.8" y="321" width="2.9" height="15.0" fill="rgb(0,225,81)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (65,536 bytes, 0.21%)</title><rect x="512.0" y="193" width="1.5" height="15.0" fill="rgb(0,227,164)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`main (6,307,840 bytes, 20.59%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`main (6,307,840 bytes, 20.59%)</title><rect x="546.8" y="337" width="139.2" height="15.0" fill="rgb(0,199,96)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >pkgin-streamsum`m..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="241" width="15.9" height="15.0" fill="rgb(0,234,98)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1FetchStage2 (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1FetchStage2 (135,168 bytes, 0.44%)</title><rect x="536.6" y="241" width="3.0" height="15.0" fill="rgb(0,220,72)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)</title><rect x="541.0" y="177" width="1.5" height="15.0" fill="rgb(0,206,111)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="633.5" y="129" width="1.4" height="15.0" fill="rgb(0,202,117)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3VdbeExec (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3VdbeExec (65,536 bytes, 0.21%)</title><rect x="542.5" y="337" width="1.4" height="15.0" fill="rgb(0,233,118)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="209" width="1.4" height="15.0" fill="rgb(0,239,39)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (73,728 bytes, 0.24%)</title><rect x="634.9" y="209" width="1.7" height="15.0" fill="rgb(0,215,30)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="321" width="1.5" height="15.0" fill="rgb(0,222,113)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="305" width="13.0" height="15.0" fill="rgb(0,196,144)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libarchive.so.13.1.2`bzip2_reader_init (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libarchive.so.13.1.2`bzip2_reader_init (73,728 bytes, 0.24%)</title><rect x="634.9" y="273" width="1.7" height="15.0" fill="rgb(0,209,89)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (139,264 bytes, 0.45%)</title><rect x="10.0" y="193" width="3.1" height="15.0" fill="rgb(0,192,101)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="97" width="7.2" height="15.0" fill="rgb(0,192,21)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="161" width="255.9" height="15.0" fill="rgb(0,220,69)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`umem_slab_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (135,168 bytes, 0.44%)</title><rect x="683.0" y="145" width="3.0" height="15.0" fill="rgb(0,204,66)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libarchive.so.13.1.2`__archive_read_filter_ahead (3,665,920 bytes, 11.97%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libarchive.so.13.1.2`__archive_read_filter_ahead (3,665,920 bytes, 11.97%)</title><rect x="554.0" y="257" width="80.9" height="15.0" fill="rgb(0,192,99)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libarchiv..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="193" width="13.0" height="15.0" fill="rgb(0,230,123)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="549.7" y="113" width="1.4" height="15.0" fill="rgb(0,228,69)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3PagerAcquire (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3PagerAcquire (135,168 bytes, 0.44%)</title><rect x="536.6" y="273" width="3.0" height="15.0" fill="rgb(0,231,204)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)</title><rect x="542.5" y="177" width="1.4" height="15.0" fill="rgb(0,195,147)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="512.0" y="113" width="1.5" height="15.0" fill="rgb(0,213,116)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3_exec (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3_exec (65,536 bytes, 0.21%)</title><rect x="681.6" y="273" width="1.4" height="15.0" fill="rgb(0,228,199)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="548.3" y="161" width="1.4" height="15.0" fill="rgb(0,193,152)" rx="2" ry="2" />
+<text text-anchor="" x="551.25" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="145" width="1.5" height="15.0" fill="rgb(0,198,92)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)</title><rect x="551.1" y="273" width="1.5" height="15.0" fill="rgb(0,236,167)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="81" width="15.9" height="15.0" fill="rgb(0,202,128)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MallocZero (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MallocZero (135,168 bytes, 0.44%)</title><rect x="536.6" y="209" width="3.0" height="15.0" fill="rgb(0,234,56)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="193" width="1.4" height="15.0" fill="rgb(0,213,123)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)</title><rect x="633.5" y="161" width="1.4" height="15.0" fill="rgb(0,221,114)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="209" width="7.2" height="15.0" fill="rgb(0,209,203)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (720,896 bytes, 2.35%)</title><rect x="520.7" y="193" width="15.9" height="15.0" fill="rgb(0,225,8)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="193" width="230.0" height="15.0" fill="rgb(0,213,178)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`umem_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3_step (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3_step (65,536 bytes, 0.21%)</title><rect x="542.5" y="353" width="1.4" height="15.0" fill="rgb(0,203,14)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (65,536 bytes, 0.21%)</title><rect x="512.0" y="209" width="1.5" height="15.0" fill="rgb(0,199,112)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="353" width="1.5" height="15.0" fill="rgb(0,192,80)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`allocateBtreePage (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`allocateBtreePage (135,168 bytes, 0.44%)</title><rect x="536.6" y="305" width="3.0" height="15.0" fill="rgb(0,219,59)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_findbuf (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_findbuf (135,168 bytes, 0.44%)</title><rect x="683.0" y="257" width="3.0" height="15.0" fill="rgb(0,233,24)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="241" width="230.0" height="15.0" fill="rgb(0,224,42)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`sqlite3Mal..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="512.0" y="81" width="1.5" height="15.0" fill="rgb(0,216,192)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="65" width="13.0" height="15.0" fill="rgb(0,215,82)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_reap (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_reap (65,536 bytes, 0.21%)</title><rect x="545.4" y="273" width="1.4" height="15.0" fill="rgb(0,202,146)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="129" width="255.9" height="15.0" fill="rgb(0,190,181)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`vmem_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`memjrnlWrite (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`memjrnlWrite (65,536 bytes, 0.21%)</title><rect x="542.5" y="257" width="1.4" height="15.0" fill="rgb(0,213,98)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_reap (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_reap (65,536 bytes, 0.21%)</title><rect x="545.4" y="289" width="1.4" height="15.0" fill="rgb(0,227,66)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="681.6" y="81" width="1.4" height="15.0" fill="rgb(0,197,53)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (2,039,808 bytes, 6.66%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (2,039,808 bytes, 6.66%)</title><rect x="636.6" y="273" width="45.0" height="15.0" fill="rgb(0,204,82)" rx="2" ry="2" />
+<text text-anchor="" x="639.56" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libu..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)</title><rect x="543.9" y="305" width="1.5" height="15.0" fill="rgb(0,201,195)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_st_update (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_st_update (65,536 bytes, 0.21%)</title><rect x="545.4" y="257" width="1.4" height="15.0" fill="rgb(0,235,144)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1Fetch (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1Fetch (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="289" width="230.0" height="15.0" fill="rgb(0,234,3)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`pcache1Fetch</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (139,264 bytes, 0.45%)</title><rect x="10.0" y="209" width="3.1" height="15.0" fill="rgb(0,195,129)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="273" width="1.5" height="15.0" fill="rgb(0,203,40)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="225" width="255.9" height="15.0" fill="rgb(0,228,185)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`sqlite3MemMalloc</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (139,264 bytes, 0.45%)</title><rect x="10.0" y="241" width="3.1" height="15.0" fill="rgb(0,200,108)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="49" width="255.9" height="15.0" fill="rgb(0,213,152)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libc.so.1`_brk_unlocked</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (131,072 bytes, 0.43%)</title><rect x="546.8" y="241" width="2.9" height="15.0" fill="rgb(0,237,123)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="541.0" y="113" width="1.5" height="15.0" fill="rgb(0,232,153)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="548.3" y="65" width="1.4" height="15.0" fill="rgb(0,211,110)" rx="2" ry="2" />
+<text text-anchor="" x="551.25" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (139,264 bytes, 0.45%)</title><rect x="10.0" y="161" width="3.1" height="15.0" fill="rgb(0,225,146)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (65,536 bytes, 0.21%)</title><rect x="549.7" y="225" width="1.4" height="15.0" fill="rgb(0,191,137)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="241" width="7.2" height="15.0" fill="rgb(0,194,163)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1FetchStage2 (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1FetchStage2 (139,264 bytes, 0.45%)</title><rect x="10.0" y="289" width="3.1" height="15.0" fill="rgb(0,195,184)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (3,600,384 bytes, 11.75%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (3,600,384 bytes, 11.75%)</title><rect x="554.0" y="145" width="79.5" height="15.0" fill="rgb(0,224,116)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.s..</text>
+</g>
+<g class="func_g" onmouseover="s('libarchive.so.13.1.2`bzip2_filter_read (3,665,920 bytes, 11.97%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libarchive.so.13.1.2`bzip2_filter_read (3,665,920 bytes, 11.97%)</title><rect x="554.0" y="241" width="80.9" height="15.0" fill="rgb(0,233,152)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libarchiv..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (73,728 bytes, 0.24%)</title><rect x="634.9" y="145" width="1.7" height="15.0" fill="rgb(0,226,33)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`pdb_rec_list (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`pdb_rec_list (65,536 bytes, 0.21%)</title><rect x="681.6" y="257" width="1.4" height="15.0" fill="rgb(0,197,28)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="549.7" y="81" width="1.4" height="15.0" fill="rgb(0,210,109)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="209" width="1.4" height="15.0" fill="rgb(0,230,101)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`allocateCursor (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`allocateCursor (65,536 bytes, 0.21%)</title><rect x="512.0" y="289" width="1.5" height="15.0" fill="rgb(0,208,60)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1Alloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1Alloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="257" width="255.9" height="15.0" fill="rgb(0,231,111)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`pcache1Alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="225" width="1.5" height="15.0" fill="rgb(0,201,162)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (65,536 bytes, 0.21%)</title><rect x="552.6" y="289" width="1.4" height="15.0" fill="rgb(0,235,116)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="65" width="1.4" height="15.0" fill="rgb(0,204,101)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libbz2.so.0.0.0`BZ2_decompress (3,600,384 bytes, 11.75%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libbz2.so.0.0.0`BZ2_decompress (3,600,384 bytes, 11.75%)</title><rect x="554.0" y="209" width="79.5" height="15.0" fill="rgb(0,211,165)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libbz2.so..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)</title><rect x="543.9" y="257" width="1.5" height="15.0" fill="rgb(0,219,183)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1ResizeHash (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1ResizeHash (139,264 bytes, 0.45%)</title><rect x="10.0" y="273" width="3.1" height="15.0" fill="rgb(0,233,182)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="81" width="1.4" height="15.0" fill="rgb(0,226,31)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (589,824 bytes, 1.93%)</title><rect x="499.0" y="225" width="13.0" height="15.0" fill="rgb(0,233,79)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (135,168 bytes, 0.44%)</title><rect x="536.6" y="113" width="3.0" height="15.0" fill="rgb(0,213,11)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="548.3" y="113" width="1.4" height="15.0" fill="rgb(0,199,32)" rx="2" ry="2" />
+<text text-anchor="" x="551.25" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (135,168 bytes, 0.44%)</title><rect x="683.0" y="225" width="3.0" height="15.0" fill="rgb(0,190,73)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="177" width="15.9" height="15.0" fill="rgb(0,208,20)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)</title><rect x="512.0" y="241" width="1.5" height="15.0" fill="rgb(0,219,119)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)</title><rect x="541.0" y="241" width="1.5" height="15.0" fill="rgb(0,193,94)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`exec_list (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`exec_list (131,072 bytes, 0.43%)</title><rect x="546.8" y="305" width="2.9" height="15.0" fill="rgb(0,215,179)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="549.7" y="97" width="1.4" height="15.0" fill="rgb(0,195,1)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)</title><rect x="542.5" y="225" width="1.4" height="15.0" fill="rgb(0,194,87)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`update_db (5,910,528 bytes, 19.29%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`update_db (5,910,528 bytes, 19.29%)</title><rect x="552.6" y="321" width="130.4" height="15.0" fill="rgb(0,216,31)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >pkgin-streamsum`..</text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_findbuf (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_findbuf (131,072 bytes, 0.43%)</title><rect x="546.8" y="273" width="2.9" height="15.0" fill="rgb(0,206,123)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`pkgindb_doquery (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`pkgindb_doquery (135,168 bytes, 0.44%)</title><rect x="683.0" y="305" width="3.0" height="15.0" fill="rgb(0,214,189)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="512.0" y="97" width="1.5" height="15.0" fill="rgb(0,226,3)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="81" width="255.9" height="15.0" fill="rgb(0,224,7)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`vmem_xalloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="97" width="13.0" height="15.0" fill="rgb(0,195,167)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (2,039,808 bytes, 6.66%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (2,039,808 bytes, 6.66%)</title><rect x="636.6" y="241" width="45.0" height="15.0" fill="rgb(0,233,91)" rx="2" ry="2" />
+<text text-anchor="" x="639.56" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libu..</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (135,168 bytes, 0.44%)</title><rect x="536.6" y="177" width="3.0" height="15.0" fill="rgb(0,209,147)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`balance (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`balance (65,536 bytes, 0.21%)</title><rect x="542.5" y="305" width="1.4" height="15.0" fill="rgb(0,192,171)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="113" width="7.2" height="15.0" fill="rgb(0,227,29)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="546.8" y="65" width="1.5" height="15.0" fill="rgb(0,228,65)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="129" width="13.0" height="15.0" fill="rgb(0,207,92)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (65,536 bytes, 0.21%)</title><rect x="549.7" y="241" width="1.4" height="15.0" fill="rgb(0,232,51)" rx="2" ry="2" />
+<text text-anchor="" x="552.70" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="209" width="15.9" height="15.0" fill="rgb(0,194,174)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="161" width="230.0" height="15.0" fill="rgb(0,207,68)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`umem_slab_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="546.8" y="49" width="1.5" height="15.0" fill="rgb(0,206,179)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (3,600,384 bytes, 11.75%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (3,600,384 bytes, 11.75%)</title><rect x="554.0" y="177" width="79.5" height="15.0" fill="rgb(0,234,162)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.s..</text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="545.4" y="49" width="1.4" height="15.0" fill="rgb(0,213,84)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3PagerAcquire (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3PagerAcquire (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="305" width="230.0" height="15.0" fill="rgb(0,212,109)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`sqlite3Pag..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (139,264 bytes, 0.45%)</title><rect x="10.0" y="129" width="3.1" height="15.0" fill="rgb(0,195,32)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1Fetch (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1Fetch (139,264 bytes, 0.45%)</title><rect x="10.0" y="305" width="3.1" height="15.0" fill="rgb(0,227,22)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="681.6" y="145" width="1.4" height="15.0" fill="rgb(0,213,140)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (720,896 bytes, 2.35%)</title><rect x="520.7" y="145" width="15.9" height="15.0" fill="rgb(0,206,71)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (135,168 bytes, 0.44%)</title><rect x="683.0" y="129" width="3.0" height="15.0" fill="rgb(0,203,34)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="305" width="7.2" height="15.0" fill="rgb(0,190,150)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (3,600,384 bytes, 11.75%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (3,600,384 bytes, 11.75%)</title><rect x="554.0" y="129" width="79.5" height="15.0" fill="rgb(0,213,141)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.s..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (135,168 bytes, 0.44%)</title><rect x="536.6" y="129" width="3.0" height="15.0" fill="rgb(0,221,191)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="145" width="1.4" height="15.0" fill="rgb(0,192,19)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="241" width="255.9" height="15.0" fill="rgb(0,192,161)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`sqlite3Malloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="209" width="1.5" height="15.0" fill="rgb(0,222,48)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="548.3" y="145" width="1.4" height="15.0" fill="rgb(0,199,49)" rx="2" ry="2" />
+<text text-anchor="" x="551.25" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (135,168 bytes, 0.44%)</title><rect x="536.6" y="49" width="3.0" height="15.0" fill="rgb(0,193,55)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3BtreeOpen (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3BtreeOpen (65,536 bytes, 0.21%)</title><rect x="551.1" y="289" width="1.5" height="15.0" fill="rgb(0,210,136)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="551.1" y="81" width="1.5" height="15.0" fill="rgb(0,191,79)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`strdup (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`strdup (65,536 bytes, 0.21%)</title><rect x="681.6" y="241" width="1.4" height="15.0" fill="rgb(0,227,187)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1Alloc (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1Alloc (720,896 bytes, 2.35%)</title><rect x="520.7" y="305" width="15.9" height="15.0" fill="rgb(0,197,137)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`pkgindb_doquery (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`pkgindb_doquery (65,536 bytes, 0.21%)</title><rect x="681.6" y="289" width="1.4" height="15.0" fill="rgb(0,192,58)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)</title><rect x="552.6" y="273" width="1.4" height="15.0" fill="rgb(0,207,145)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="283.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`fprintf (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`fprintf (135,168 bytes, 0.44%)</title><rect x="683.0" y="289" width="3.0" height="15.0" fill="rgb(0,202,107)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="633.5" y="97" width="1.4" height="15.0" fill="rgb(0,192,8)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3PagerAcquire (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3PagerAcquire (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="305" width="255.9" height="15.0" fill="rgb(0,212,57)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`sqlite3PagerAc..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_hash_rescale (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_hash_rescale (65,536 bytes, 0.21%)</title><rect x="545.4" y="225" width="1.4" height="15.0" fill="rgb(0,201,134)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="241" width="13.0" height="15.0" fill="rgb(0,228,179)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)</title><rect x="542.5" y="145" width="1.4" height="15.0" fill="rgb(0,213,4)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)</title><rect x="681.6" y="193" width="1.4" height="15.0" fill="rgb(0,220,101)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (65,536 bytes, 0.21%)</title><rect x="539.6" y="241" width="1.4" height="15.0" fill="rgb(0,216,59)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="251.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="305" width="1.4" height="15.0" fill="rgb(0,212,204)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (2,039,808 bytes, 6.66%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (2,039,808 bytes, 6.66%)</title><rect x="636.6" y="209" width="45.0" height="15.0" fill="rgb(0,229,95)" rx="2" ry="2" />
+<text text-anchor="" x="639.56" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libu..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_init (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_init (131,072 bytes, 0.43%)</title><rect x="546.8" y="209" width="2.9" height="15.0" fill="rgb(0,194,9)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="219.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3DbMallocRaw (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3DbMallocRaw (65,536 bytes, 0.21%)</title><rect x="512.0" y="257" width="1.5" height="15.0" fill="rgb(0,203,92)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="548.3" y="97" width="1.4" height="15.0" fill="rgb(0,223,164)" rx="2" ry="2" />
+<text text-anchor="" x="551.25" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="113" width="255.9" height="15.0" fill="rgb(0,201,195)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`vmem_xalloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="81" width="13.0" height="15.0" fill="rgb(0,219,192)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MallocZero (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MallocZero (139,264 bytes, 0.45%)</title><rect x="10.0" y="257" width="3.1" height="15.0" fill="rgb(0,204,60)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="353" width="1.4" height="15.0" fill="rgb(0,201,38)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="545.4" y="161" width="1.4" height="15.0" fill="rgb(0,208,167)" rx="2" ry="2" />
+<text text-anchor="" x="548.36" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (135,168 bytes, 0.44%)</title><rect x="683.0" y="161" width="3.0" height="15.0" fill="rgb(0,202,145)" rx="2" ry="2" />
+<text text-anchor="" x="686.02" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)</title><rect x="541.0" y="145" width="1.5" height="15.0" fill="rgb(0,200,37)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="145" width="13.0" height="15.0" fill="rgb(0,210,97)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (720,896 bytes, 2.35%)</title><rect x="520.7" y="49" width="15.9" height="15.0" fill="rgb(0,213,77)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libbz2.so.0.0.0`BZ2_bzDecompress (3,600,384 bytes, 11.75%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libbz2.so.0.0.0`BZ2_bzDecompress (3,600,384 bytes, 11.75%)</title><rect x="554.0" y="225" width="79.5" height="15.0" fill="rgb(0,193,88)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libbz2.so..</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`balance_nonroot (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`balance_nonroot (65,536 bytes, 0.21%)</title><rect x="542.5" y="289" width="1.4" height="15.0" fill="rgb(0,232,123)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="113" width="13.0" height="15.0" fill="rgb(0,237,136)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="123.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3VdbeExec (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3VdbeExec (135,168 bytes, 0.44%)</title><rect x="536.6" y="353" width="3.0" height="15.0" fill="rgb(0,235,0)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`allocateBtreePage (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`allocateBtreePage (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="337" width="230.0" height="15.0" fill="rgb(0,237,129)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`allocateBt..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (65,536 bytes, 0.21%)</title><rect x="551.1" y="225" width="1.5" height="15.0" fill="rgb(0,220,175)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (327,680 bytes, 1.07%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (327,680 bytes, 1.07%)</title><rect x="513.5" y="161" width="7.2" height="15.0" fill="rgb(0,191,207)" rx="2" ry="2" />
+<text text-anchor="" x="516.45" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_populate (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_populate (589,824 bytes, 1.93%)</title><rect x="499.0" y="177" width="13.0" height="15.0" fill="rgb(0,190,128)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_alloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_alloc (135,168 bytes, 0.44%)</title><rect x="536.6" y="145" width="3.0" height="15.0" fill="rgb(0,202,21)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="546.8" y="161" width="1.5" height="15.0" fill="rgb(0,231,62)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="65" width="255.9" height="15.0" fill="rgb(0,215,175)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="75.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`vmem_sbrk_alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (65,536 bytes, 0.21%)</title><rect x="633.5" y="177" width="1.4" height="15.0" fill="rgb(0,237,60)" rx="2" ry="2" />
+<text text-anchor="" x="636.49" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`balance (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`balance (65,536 bytes, 0.21%)</title><rect x="539.6" y="289" width="1.4" height="15.0" fill="rgb(0,229,202)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1Fetch (11,599,872 bytes, 37.87%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1Fetch (11,599,872 bytes, 37.87%)</title><rect x="13.1" y="289" width="255.9" height="15.0" fill="rgb(0,235,32)" rx="2" ry="2" />
+<text text-anchor="" x="16.07" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`pcache1Fetch</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="548.3" y="129" width="1.4" height="15.0" fill="rgb(0,210,181)" rx="2" ry="2" />
+<text text-anchor="" x="551.25" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="541.0" y="49" width="1.5" height="15.0" fill="rgb(0,229,131)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="552.6" y="145" width="1.4" height="15.0" fill="rgb(0,239,9)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="81" width="1.5" height="15.0" fill="rgb(0,212,101)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="91.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="161" width="1.5" height="15.0" fill="rgb(0,232,46)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_alloc (65,536 bytes, 0.21%)</title><rect x="552.6" y="257" width="1.4" height="15.0" fill="rgb(0,216,144)" rx="2" ry="2" />
+<text text-anchor="" x="555.59" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (135,168 bytes, 0.44%)</title><rect x="536.6" y="97" width="3.0" height="15.0" fill="rgb(0,199,134)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`download_summary (2,039,808 bytes, 6.66%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`download_summary (2,039,808 bytes, 6.66%)</title><rect x="636.6" y="289" width="45.0" height="15.0" fill="rgb(0,207,83)" rx="2" ry="2" />
+<text text-anchor="" x="639.56" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >pkgi..</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`balance (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`balance (135,168 bytes, 0.44%)</title><rect x="536.6" y="321" width="3.0" height="15.0" fill="rgb(0,203,84)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (65,536 bytes, 0.21%)</title><rect x="551.1" y="97" width="1.5" height="15.0" fill="rgb(0,220,18)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="107.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`insertCell (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`insertCell (65,536 bytes, 0.21%)</title><rect x="541.0" y="289" width="1.5" height="15.0" fill="rgb(0,223,199)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('pkgin-streamsum`init_global_pkglists (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>pkgin-streamsum`init_global_pkglists (65,536 bytes, 0.21%)</title><rect x="681.6" y="305" width="1.4" height="15.0" fill="rgb(0,226,201)" rx="2" ry="2" />
+<text text-anchor="" x="684.57" y="315.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (65,536 bytes, 0.21%)</title><rect x="512.0" y="225" width="1.5" height="15.0" fill="rgb(0,230,77)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (65,536 bytes, 0.21%)</title><rect x="542.5" y="49" width="1.4" height="15.0" fill="rgb(0,235,187)" rx="2" ry="2" />
+<text text-anchor="" x="545.47" y="59.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_xalloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="193" width="1.5" height="15.0" fill="rgb(0,231,183)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1Alloc (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1Alloc (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="257" width="230.0" height="15.0" fill="rgb(0,217,4)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libsqlite3.so.0.8.6`pcache1Alloc</text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3_step (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3_step (131,072 bytes, 0.43%)</title><rect x="539.6" y="337" width="2.9" height="15.0" fill="rgb(0,197,10)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_alloc (65,536 bytes, 0.21%)</title><rect x="543.9" y="129" width="1.5" height="15.0" fill="rgb(0,225,8)" rx="2" ry="2" />
+<text text-anchor="" x="546.91" y="139.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3_exec (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3_exec (131,072 bytes, 0.43%)</title><rect x="539.6" y="353" width="2.9" height="15.0" fill="rgb(0,200,135)" rx="2" ry="2" />
+<text text-anchor="" x="542.57" y="363.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3Malloc (589,824 bytes, 1.93%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3Malloc (589,824 bytes, 1.93%)</title><rect x="499.0" y="321" width="13.0" height="15.0" fill="rgb(0,220,61)" rx="2" ry="2" />
+<text text-anchor="" x="501.99" y="331.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`_brk_unlocked (2,039,808 bytes, 6.66%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`_brk_unlocked (2,039,808 bytes, 6.66%)</title><rect x="636.6" y="161" width="45.0" height="15.0" fill="rgb(0,213,135)" rx="2" ry="2" />
+<text text-anchor="" x="639.56" y="171.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libc..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_malloc (3,600,384 bytes, 11.75%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_malloc (3,600,384 bytes, 11.75%)</title><rect x="554.0" y="193" width="79.5" height="15.0" fill="rgb(0,190,70)" rx="2" ry="2" />
+<text text-anchor="" x="557.04" y="203.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.s..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_create (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_create (131,072 bytes, 0.43%)</title><rect x="546.8" y="177" width="2.9" height="15.0" fill="rgb(0,235,63)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3_exec (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3_exec (65,536 bytes, 0.21%)</title><rect x="512.0" y="337" width="1.5" height="15.0" fill="rgb(0,210,124)" rx="2" ry="2" />
+<text text-anchor="" x="515.01" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`memjrnlWrite (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`memjrnlWrite (65,536 bytes, 0.21%)</title><rect x="541.0" y="257" width="1.5" height="15.0" fill="rgb(0,218,19)" rx="2" ry="2" />
+<text text-anchor="" x="544.02" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1Fetch (720,896 bytes, 2.35%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1Fetch (720,896 bytes, 2.35%)</title><rect x="520.7" y="337" width="15.9" height="15.0" fill="rgb(0,193,123)" rx="2" ry="2" />
+<text text-anchor="" x="523.68" y="347.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (65,536 bytes, 0.21%)</title><rect x="551.1" y="177" width="1.5" height="15.0" fill="rgb(0,239,21)" rx="2" ry="2" />
+<text text-anchor="" x="554.14" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`pcache1Fetch (135,168 bytes, 0.44%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`pcache1Fetch (135,168 bytes, 0.44%)</title><rect x="536.6" y="257" width="3.0" height="15.0" fill="rgb(0,239,142)" rx="2" ry="2" />
+<text text-anchor="" x="539.59" y="267.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`vmem_sbrk_alloc (2,039,808 bytes, 6.66%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`vmem_sbrk_alloc (2,039,808 bytes, 6.66%)</title><rect x="636.6" y="177" width="45.0" height="15.0" fill="rgb(0,207,36)" rx="2" ry="2" />
+<text text-anchor="" x="639.56" y="187.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libu..</text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_cache_alloc (73,728 bytes, 0.24%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_cache_alloc (73,728 bytes, 0.24%)</title><rect x="634.9" y="225" width="1.7" height="15.0" fill="rgb(0,235,85)" rx="2" ry="2" />
+<text text-anchor="" x="637.93" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libsqlite3.so.0.8.6`sqlite3MemMalloc (139,264 bytes, 0.45%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libsqlite3.so.0.8.6`sqlite3MemMalloc (139,264 bytes, 0.45%)</title><rect x="10.0" y="225" width="3.1" height="15.0" fill="rgb(0,190,184)" rx="2" ry="2" />
+<text text-anchor="" x="13.00" y="235.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s('libumem.so.1`umem_slab_create (10,420,224 bytes, 34.02%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libumem.so.1`umem_slab_create (10,420,224 bytes, 34.02%)</title><rect x="269.0" y="145" width="230.0" height="15.0" fill="rgb(0,239,134)" rx="2" ry="2" />
+<text text-anchor="" x="272.05" y="155.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >libumem.so.1`umem_slab_create</text>
+</g>
+<g class="func_g" onmouseover="s('libc.so.1`fgets (131,072 bytes, 0.43%)')" onmouseout="c()" onclick="zoom(this)">
+<title>libc.so.1`fgets (131,072 bytes, 0.43%)</title><rect x="546.8" y="289" width="2.9" height="15.0" fill="rgb(0,226,134)" rx="2" ry="2" />
+<text text-anchor="" x="549.80" y="299.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
+</g>
+</svg>
